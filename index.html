@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Typer Ekstraliga 2026/27</title>
+    <title>Typer Ekstraliga 2026</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --primary: #1a237e; --accent: #ffab00; --bg: #f4f6f8; --text: #333; --white: #ffffff; }
@@ -35,24 +35,15 @@
         .rank-1 { background-color: #fffde7; border-left: 5px solid var(--accent); }
         .points-total { font-weight: 800; color: var(--primary); font-size: 1.2rem; background: #e8eaf6; padding: 5px 10px; border-radius: 8px; }
 
-        /* Herby Klubów (CSS Badges) */
-        .team-badge { width: 30px; height: 30px; display: inline-block; border-radius: 50%; vertical-align: middle; margin-right: 8px; border: 2px solid rgba(0,0,0,0.1); position: relative; }
-        /* Definicje kolorów */
-        .team-lublin { background: linear-gradient(135deg, #005BBB 50%, #FFD700 50%); }
-        .team-wroclaw { background: linear-gradient(135deg, #FFD700 33%, #FF0000 33%, #FF0000 66%, #FFD700 66%); }
-        .team-gorzow { background: linear-gradient(to right, #FFD700, #005BBB); }
-        .team-torun { background: linear-gradient(135deg, #FFD700, #005BBB, #FFFFFF); }
-        .team-czestochowa { background: linear-gradient(to right, #FFFFFF, #008000); }
-        .team-leszno { background: linear-gradient(to bottom, #FFFFFF, #005BBB); }
-        .team-grudziadz { background: linear-gradient(45deg, #FFD700, #005BBB); }
-        .team-zielonagora { background: linear-gradient(135deg, #FFD700, #FFFFFF, #008000); }
-        .team-generic { background: #ccc; }
+        /* Loga Klubów */
+        .team-logo { width: 35px; height: 35px; object-fit: contain; vertical-align: middle; margin-right: 10px; }
 
         /* Mecze */
         .match-card { border: 1px solid #eee; border-radius: 10px; margin-bottom: 20px; background: #fff; overflow: hidden; transition: transform 0.2s; }
         .match-card:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
         .match-header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: #fafafa; border-bottom: 1px solid #eee; }
-        .match-teams { font-weight: 700; color: #333; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
+        .match-teams { font-weight: 700; color: #333; font-size: 1rem; line-height: 1.6; }
+        .match-team-row { display: flex; align-items: center; }
         .match-score { font-size: 1.4rem; font-weight: 800; color: var(--primary); background: #e3f2fd; padding: 5px 15px; border-radius: 8px; min-width: 60px; text-align: center; }
         
         .types-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; padding: 15px; background: #fff; }
@@ -80,7 +71,7 @@
 <body>
 
 <header>
-    <h1>🏁 Typer Ekstraliga 2026/27</h1>
+    <h1>🏁 Typer Ekstraliga 2026</h1>
     <div class="subtitle">Oficjalna liga typerów</div>
 </header>
 
@@ -198,12 +189,11 @@
 
 <script>
 /* ==========================================================================
-   DANE STARTOWE (TO PODMIENIASZ PO EKSPORCIE)
+   DANE STARTOWE
    ========================================================================== */
 const initialData = {
   "players": [
-    { "id": "p1", "name": "Marek Kowalski", "nick": "Prezes" },
-    { "id": "p2", "name": "Anna Nowak", "nick": "Ruda" }
+    // TU POJAWIĄ SIĘ GRACZE PO DODANIU W PANELU
   ],
   "schedule": [
     {
@@ -383,23 +373,24 @@ const app = {
         this.renderMatches();
         this.renderChart();
         this.renderAdminSelects();
-        this.renderPlayerList(); // Panel graczy
+        this.renderPlayerList();
     },
 
-    // Generowanie kolorowych herbów
     getTeamIcon: function(name) {
-        let cls = "team-generic";
         const n = name.toLowerCase();
-        if(n.includes("lublin")) cls = "team-lublin";
-        else if(n.includes("wrocław") || n.includes("wroclaw")) cls = "team-wroclaw";
-        else if(n.includes("gorzów") || n.includes("gorzow")) cls = "team-gorzow";
-        else if(n.includes("toruń") || n.includes("torun")) cls = "team-torun";
-        else if(n.includes("częstochowa") || n.includes("czestochowa")) cls = "team-czestochowa";
-        else if(n.includes("leszno")) cls = "team-leszno";
-        else if(n.includes("grudziądz") || n.includes("grudziadz")) cls = "team-grudziadz";
-        else if(n.includes("zielona")) cls = "team-zielonagora";
-        
-        return `<span class="team-badge ${cls}" title="${name}"></span>`;
+        let url = "";
+
+        if(n.includes("toruń") || n.includes("torun")) url = "https://v.wpimg.pl/MDc4NzEuYiUCVjhJag5vMEEObBMsV2FmFhZ0WGpBdTxMRygNNVs6NABQIFQ1GWIwAlM9VXNMfCBaBX4fJ0IvfAUGEUl9QH1zWwN_VDUbKmYe";
+        else if(n.includes("lublin")) url = "https://v.wpimg.pl/MjQ1NDIuYgswUzh3Zg5vHnMLbC0gV2FIJBN0ZmZBdRJ-QigzOVs6GjJVIGo5GWIeMFY9a3xNK1hnAC12fUQrXDIJEXN8RH9eZAV8ajkbKkgs";
+        else if(n.includes("wrocław") || n.includes("wroclaw")) url = "https://v.wpimg.pl/NDQ3NzUuYSUwUThJeg5sMHMJbBM8V2JmJBF0WHpBdjx-QCgNJVs5NDJXIFQlGWEwMFQ9VWNHfXU1BS8ZZ0J6J2UHEU9jR3pwZgR7VCUbKWYs";
+        else if(n.includes("grudziądz") || n.includes("grudziadz")) url = "https://v.wpimg.pl/MzI3OTUuYhsoUTlneg5vDmsJbT08V2FYPBF1dnpBdQJmQCkjJVs6CipXIXolGWIOKFQ8e2AQeB57V3tgNkZ1Sn8GEGVhR35Ifgp6eiUbKlg0";
+        else if(n.includes("zielona")) url = "https://v.wpimg.pl/OTAxMDMuYDUgGjt3Yg5tIGNCby0kV2N2NFp3ZmJBdyxuCyszPVs4JCIcI2o9GWAgIB8-a3tAdmF4TXwhexQrZCVLEnx4TXZkcEh-aj0bKHY8";
+        else if(n.includes("częstochowa") || n.includes("czestochowa")) url = "https://v.wpimg.pl/NTQ0MzYuYTUwUjtJdg5sIHMKbxMwV2J2JBJ3WHZBdix-QysNKVs5JDJUI1QpGWEgMFc-VWwQezBjUStPa0B4YmcDEk1gR3tgZQN7VCkbKXYs";
+        else if(n.includes("gorzów") || n.includes("gorzow")) url = "https://v.wpimg.pl/MDE2OTMuYiUkUDlnYg5vMGcIbT0kV2FmMBB1dmJBdTxqQSkjPVs6NCZWIXo9GWIwJFU8e3gQeCB3UXpseBR-dHYFEGB1RX11cwt8ej0bKmY4";
+        else if(n.includes("leszno")) url = "https://v.wpimg.pl/OTM2MjAuYDUsUDtZbg5tIG8IbwMoV2N2OBB3SG5BdyxiQSsdMVs4JC5WI0QxGWAgLFU-RXQQejB-A3sPcBd5NikKElp3RXZnewB9RDEbKHYw";
+
+        if(url) return `<img src="${url}" class="team-logo" alt="${name}">`;
+        return "";
     },
 
     parseScore: function(str) {
@@ -484,7 +475,6 @@ const app = {
 
     renderRoundSelect: function() {
         const sel = document.getElementById("roundSelect");
-        // Zachowaj wybraną opcję jeśli istnieje
         const selected = sel.value;
         sel.innerHTML = this.data.schedule.map((r, i) => `<option value="${i}">${r.name}</option>`).join('');
         if(selected) sel.value = selected;
@@ -506,7 +496,6 @@ const app = {
                 const ptsBadge = pts !== null ? `<span class="pts-badge p-${tip.joker ? pts/2 : pts}">${pts}</span>` : '';
                 const jokerBadge = tip.joker ? `<span class="joker-badge">JOKER</span>` : '';
 
-                // Wyróżnij zwycięski typ
                 let winnerClass = "";
                 if (pts === 5 || (tip.joker && pts === 10)) winnerClass = "winner";
 
@@ -522,8 +511,8 @@ const app = {
                     <div>
                         <div style="font-size:0.8rem; color:#888; margin-bottom:5px;">${m.date}</div>
                         <div class="match-teams">
-                            ${this.getTeamIcon(m.host)} ${m.host} <br>
-                            ${this.getTeamIcon(m.guest)} ${m.guest}
+                            <div class="match-team-row">${this.getTeamIcon(m.host)} ${m.host}</div>
+                            <div class="match-team-row">${this.getTeamIcon(m.guest)} ${m.guest}</div>
                         </div>
                     </div>
                     ${resHtml}
@@ -630,7 +619,7 @@ const admin = {
     },
 
     refreshTipView: function() {
-        // Opcjonalne: wczytanie istniejącego typu do pól (można rozwinąć w przyszłości)
+        // Placeholder
     },
 
     saveResult: function() {
