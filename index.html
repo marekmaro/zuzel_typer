@@ -3,69 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Typer Ekstraliga 2026</title>
+    <title>Typer Ekstraliga 2026/27</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --primary: #003366; --accent: #ffcc00; --bg: #f4f4f9; --text: #333; --white: #ffffff; }
+        :root { --primary: #1a237e; --accent: #ffab00; --bg: #f4f6f8; --text: #333; --white: #ffffff; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0; }
         
         /* Header */
-        header { background: linear-gradient(135deg, var(--primary), #004080); color: var(--white); padding: 20px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        h1 { margin: 0; font-size: 1.8rem; letter-spacing: 1px; }
-        .subtitle { font-size: 0.9rem; opacity: 0.8; margin-top: 5px; }
+        header { background: linear-gradient(135deg, #1a237e 0%, #283593 100%); color: var(--white); padding: 25px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        h1 { margin: 0; font-size: 2rem; letter-spacing: 1px; font-weight: 800; }
+        .subtitle { font-size: 1rem; opacity: 0.9; margin-top: 5px; font-weight: 300; }
 
-        .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
+        .container { max-width: 1100px; margin: 25px auto; padding: 0 15px; }
 
         /* Menu */
-        .nav-bar { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
-        .nav-btn { background: var(--white); border: 2px solid transparent; padding: 10px 20px; border-radius: 25px; cursor: pointer; font-weight: bold; color: var(--primary); transition: 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .nav-btn:hover { background: #eef; }
-        .nav-btn.active { background: var(--primary); color: var(--white); border-color: var(--primary); }
-        .nav-btn.admin-mode { background: #d32f2f; color: white; }
+        .nav-bar { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin-bottom: 25px; }
+        .nav-btn { background: var(--white); border: none; padding: 12px 25px; border-radius: 30px; cursor: pointer; font-weight: 600; color: #555; transition: all 0.3s ease; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .nav-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .nav-btn.active { background: var(--primary); color: var(--white); }
+        .nav-btn.admin-mode { background: #c62828; color: white; }
 
         /* Sekcje */
-        .section { display: none; background: var(--white); padding: 25px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .section { display: none; background: var(--white); padding: 30px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
         .section.active { display: block; animation: fadeIn 0.4s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         /* Tabela */
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th { background: #eee; color: #555; padding: 12px; font-size: 0.85rem; text-transform: uppercase; }
-        td { padding: 12px; border-bottom: 1px solid #eee; text-align: center; }
+        th { background: #f5f5f5; color: #666; padding: 15px; font-size: 0.85rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+        td { padding: 15px; border-bottom: 1px solid #eee; text-align: center; vertical-align: middle; }
         .rank-1 { background-color: #fffde7; border-left: 5px solid var(--accent); }
-        .points-total { font-weight: bold; color: var(--primary); font-size: 1.1rem; }
+        .points-total { font-weight: 800; color: var(--primary); font-size: 1.2rem; background: #e8eaf6; padding: 5px 10px; border-radius: 8px; }
+
+        /* Herby Klubów (CSS Badges) */
+        .team-badge { width: 30px; height: 30px; display: inline-block; border-radius: 50%; vertical-align: middle; margin-right: 8px; border: 2px solid rgba(0,0,0,0.1); position: relative; }
+        /* Definicje kolorów */
+        .team-lublin { background: linear-gradient(135deg, #005BBB 50%, #FFD700 50%); }
+        .team-wroclaw { background: linear-gradient(135deg, #FFD700 33%, #FF0000 33%, #FF0000 66%, #FFD700 66%); }
+        .team-gorzow { background: linear-gradient(to right, #FFD700, #005BBB); }
+        .team-torun { background: linear-gradient(135deg, #FFD700, #005BBB, #FFFFFF); }
+        .team-czestochowa { background: linear-gradient(to right, #FFFFFF, #008000); }
+        .team-leszno { background: linear-gradient(to bottom, #FFFFFF, #005BBB); }
+        .team-grudziadz { background: linear-gradient(45deg, #FFD700, #005BBB); }
+        .team-zielonagora { background: linear-gradient(135deg, #FFD700, #FFFFFF, #008000); }
+        .team-generic { background: #ccc; }
 
         /* Mecze */
-        .match-card { border: 1px solid #f0f0f0; border-radius: 8px; margin-bottom: 15px; background: #fafafa; }
-        .match-header { padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; background: #fff; border-radius: 8px 8px 0 0; }
-        .match-date { font-size: 0.8rem; color: #888; }
-        .match-teams { font-weight: 700; color: #333; }
-        .match-score { font-size: 1.2rem; font-weight: bold; color: var(--primary); background: #e3f2fd; padding: 5px 12px; border-radius: 6px; }
+        .match-card { border: 1px solid #eee; border-radius: 10px; margin-bottom: 20px; background: #fff; overflow: hidden; transition: transform 0.2s; }
+        .match-card:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .match-header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: #fafafa; border-bottom: 1px solid #eee; }
+        .match-teams { font-weight: 700; color: #333; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
+        .match-score { font-size: 1.4rem; font-weight: 800; color: var(--primary); background: #e3f2fd; padding: 5px 15px; border-radius: 8px; min-width: 60px; text-align: center; }
         
-        .types-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; padding: 15px; }
-        .type-box { background: #fff; padding: 8px; border: 1px solid #eee; border-radius: 6px; font-size: 0.9rem; position: relative; }
-        .joker-badge { position: absolute; top: -5px; right: -5px; background: var(--accent); color: #000; font-size: 0.65rem; padding: 2px 6px; border-radius: 10px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .types-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; padding: 15px; background: #fff; }
+        .type-box { background: #f9f9f9; padding: 8px; border-radius: 6px; font-size: 0.9rem; text-align: center; border: 1px solid #eee; position: relative; }
+        .type-box.winner { background: #e8f5e9; border-color: #c8e6c9; }
         
-        .pts-badge { display: inline-block; width: 22px; height: 22px; line-height: 22px; text-align: center; border-radius: 50%; color: white; font-size: 0.75rem; margin-left: 5px; font-weight: bold; }
+        .joker-badge { position: absolute; top: -6px; right: -6px; background: var(--accent); color: #000; font-size: 0.6rem; padding: 2px 6px; border-radius: 10px; font-weight: 800; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .pts-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; color: white; font-size: 0.75rem; margin-left: 5px; font-weight: bold; }
         .p-5 { background: #2e7d32; } .p-3 { background: #1565c0; } .p-2 { background: #ef6c00; } .p-0 { background: #c62828; }
 
         /* Admin Panel */
-        .admin-controls { margin-top: 20px; border-top: 2px solid #eee; padding-top: 20px; }
-        .form-row { margin-bottom: 15px; }
-        input[type="text"], select { padding: 8px; width: 100%; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
-        button.action-btn { padding: 8px 15px; cursor: pointer; border: none; border-radius: 4px; font-weight: bold; }
-        .btn-green { background: #4caf50; color: white; }
-        .btn-blue { background: #2196f3; color: white; }
-        .btn-red { background: #f44336; color: white; }
-        
-        .copy-area { width: 100%; height: 100px; font-family: monospace; font-size: 0.8rem; margin-top: 10px; }
+        .admin-section { margin-bottom: 30px; background: #fff9c4; padding: 20px; border-radius: 8px; border: 1px solid #fbc02d; }
+        .admin-title { font-size: 1.2rem; margin-bottom: 15px; color: #f57f17; font-weight: bold; border-bottom: 2px solid #fbc02d; padding-bottom: 5px; }
+        input, select { padding: 10px; width: 100%; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; margin-bottom: 10px; }
+        .action-btn { padding: 10px 20px; cursor: pointer; border: none; border-radius: 6px; font-weight: bold; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.5px; transition: 0.2s; }
+        .btn-green { background: #43a047; color: white; } .btn-green:hover { background: #2e7d32; }
+        .btn-blue { background: #1e88e5; color: white; } .btn-blue:hover { background: #1565c0; }
+        .btn-red { background: #e53935; color: white; } .btn-red:hover { background: #c62828; }
+        .copy-area { width: 100%; height: 120px; font-family: monospace; font-size: 0.8rem; padding: 10px; border: 1px solid #ccc; background: #f1f1f1; }
+
+        .player-list-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; background: white; margin-bottom: 5px; border-radius: 4px; border: 1px solid #eee; }
 
     </style>
 </head>
 <body>
 
 <header>
-    <h1>🏁 Typer Ekstraliga 2026</h1>
+    <h1>🏁 Typer Ekstraliga 2026/27</h1>
     <div class="subtitle">Oficjalna liga typerów</div>
 </header>
 
@@ -85,8 +100,8 @@
         <table id="rankTable">
             <thead>
                 <tr>
-                    <th>Poz</th>
-                    <th style="text-align:left">Gracz</th>
+                    <th>#</th>
+                    <th style="text-align:left">Nick</th>
                     <th>5 pkt</th>
                     <th>3 pkt</th>
                     <th>2 pkt</th>
@@ -100,7 +115,7 @@
     <!-- MECZE -->
     <div id="matches" class="section">
         <div style="text-align:center; margin-bottom:20px;">
-            <select id="roundSelect" onchange="app.renderMatches()" style="padding:10px; font-size:1rem; max-width:300px;"></select>
+            <select id="roundSelect" onchange="app.renderMatches()" style="padding:10px; font-size:1rem; max-width:300px; box-shadow:0 2px 5px rgba(0,0,0,0.1);"></select>
         </div>
         <div id="matchesContainer"></div>
     </div>
@@ -113,11 +128,11 @@
     <!-- REGULAMIN -->
     <div id="rules" class="section">
         <h3>Zasady Gry</h3>
-        <ul style="line-height:1.6">
+        <ul style="line-height:1.8">
             <li><strong>Typowanie:</strong> Do 24h przed meczem.</li>
             <li><strong>Punktacja:</strong> 
                 <span class="pts-badge p-5">5</span> Dokładny wynik, 
-                <span class="pts-badge p-3">3</span> Zwycięzca + różnica pkt, 
+                <span class="pts-badge p-3">3</span> Zwycięzca + różnica, 
                 <span class="pts-badge p-2">2</span> Zwycięzca.
             </li>
             <li><strong>JOKER (x2):</strong> Raz na rundę przy jednym meczu.</li>
@@ -126,35 +141,55 @@
     </div>
 
     <!-- PANEL ADMINA -->
-    <div id="adminPanel" class="section" style="border: 2px solid #d32f2f;">
-        <h2 style="color:#d32f2f">⚙️ Panel Administratora</h2>
-        <p>1. Wprowadź wyniki lub typy.<br>2. Kliknij "POBIERZ NOWĄ BAZĘ".<br>3. Skopiuj kod i podmień go w pliku index.html w sekcji "DANE STARTOWE".</p>
+    <div id="adminPanel" class="section" style="border-top: 5px solid #c62828;">
+        <h2 style="color:#c62828">⚙️ Panel Administratora</h2>
+        <p style="font-size:0.9rem; color:#555;">Zmiany tutaj są tymczasowe (w przeglądarce). Aby je zapisać na stałe, użyj przycisku "POBIERZ BAZĘ" na dole i podmień kod w pliku index.html.</p>
+
+        <!-- Zarządzanie Graczami -->
+        <div class="admin-section">
+            <div class="admin-title">👥 Zarządzanie Graczami</div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr auto; gap:10px; margin-bottom:15px;">
+                <input type="text" id="newPlayerName" placeholder="Imię i Nazwisko (tylko dla Admina)">
+                <input type="text" id="newPlayerNick" placeholder="Nick (widoczny w tabeli)">
+                <button class="action-btn btn-green" onclick="admin.addPlayer()">Dodaj</button>
+            </div>
+            <div id="playerListContainer" style="max-height: 200px; overflow-y: auto;"></div>
+        </div>
         
-        <div class="admin-controls">
-            <h3>Edycja Meczów</h3>
-            <div class="form-row">
+        <!-- Edycja Meczów -->
+        <div class="admin-section">
+            <div class="admin-title">✏️ Edycja Wyników i Typów</div>
+            <div style="margin-bottom:10px;">
                 <label>Wybierz mecz:</label>
-                <select id="adminMatchSelect"></select>
+                <select id="adminMatchSelect" onchange="admin.refreshTipView()"></select>
             </div>
             
-            <div style="background:#eee; padding:15px; border-radius:5px;">
-                <h4>Wynik Oficjalny</h4>
-                <input type="text" id="adminResult" placeholder="np. 50:40">
-                <button class="action-btn btn-green" onclick="admin.saveResult()">Zapisz Wynik</button>
+            <div style="background:white; padding:15px; border-radius:5px; margin-bottom:15px; border:1px solid #eee;">
+                <h4>🏆 Wynik Oficjalny</h4>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="adminResult" placeholder="np. 50:40">
+                    <button class="action-btn btn-green" onclick="admin.saveResult()">Zapisz</button>
+                </div>
             </div>
 
-            <div style="background:#eee; padding:15px; border-radius:5px; margin-top:10px;">
-                <h4>Dodaj Typ Gracza</h4>
+            <div style="background:white; padding:15px; border-radius:5px; border:1px solid #eee;">
+                <h4>✍️ Dodaj/Edytuj Typ Gracza</h4>
                 <select id="adminPlayerSelect"></select>
-                <input type="text" id="adminTipScore" placeholder="np. 48:42" style="margin-top:5px;">
-                <label><input type="checkbox" id="adminTipJoker"> JOKER (x2)</label>
-                <button class="action-btn btn-blue" onclick="admin.saveTip()" style="margin-top:5px;">Zapisz Typ</button>
+                <div style="display:flex; gap:10px; align-items:center; margin-top:5px;">
+                    <input type="text" id="adminTipScore" placeholder="np. 48:42" style="margin-bottom:0;">
+                    <label style="white-space:nowrap; cursor:pointer;">
+                        <input type="checkbox" id="adminTipJoker"> 🃏 JOKER
+                    </label>
+                    <button class="action-btn btn-blue" onclick="admin.saveTip()">Zapisz</button>
+                </div>
             </div>
         </div>
 
+        <!-- Eksport -->
         <div style="margin-top:30px; border-top:2px dashed #ccc; padding-top:20px;">
-            <h3>📤 Eksport Danych na GitHub</h3>
-            <button class="action-btn btn-red" onclick="admin.exportData()">POBIERZ NOWĄ BAZĘ (JSON)</button>
+            <h3>📤 ZAPISZ ZMIANY (Eksport na GitHub)</h3>
+            <p>Kliknij poniżej, skopiuj kod i wklej go w notatniku w miejsce sekcji "DANE STARTOWE".</p>
+            <button class="action-btn btn-red" onclick="admin.exportData()">POBIERZ NOWĄ BAZĘ DANYCH</button>
             <textarea id="exportArea" class="copy-area" placeholder="Tutaj pojawi się kod do skopiowania..."></textarea>
         </div>
     </div>
@@ -163,13 +198,12 @@
 
 <script>
 /* ==========================================================================
-   DANE STARTOWE (TO PODMIENIASZ JAKO ADMIN PO POBRANIU Z PANELU)
+   DANE STARTOWE (TO PODMIENIASZ PO EKSPORCIE)
    ========================================================================== */
 const initialData = {
   "players": [
-    {"id": "p1", "name": "Marek"},
-    {"id": "p2", "name": "Ania"},
-    {"id": "p3", "name": "Tomek"}
+    { "id": "p1", "name": "Marek Kowalski", "nick": "Prezes" },
+    { "id": "p2", "name": "Anna Nowak", "nick": "Ruda" }
   ],
   "schedule": [
     {
@@ -334,7 +368,7 @@ const initialData = {
     }
   ]
 };
-/* KONIEC DANYCH STARTOWYCH */
+/* KONIEC DANYCH */
 
 
 const app = {
@@ -342,18 +376,30 @@ const app = {
     stats: {},
 
     init: function() {
-        // Ładowanie danych
         this.data = initialData;
-        
-        // Dodaj swoich graczy tutaj jeśli ich nie ma w initialData
-        // Albo edytuj initialData na górze!
-
         this.calculate();
         this.renderRanking();
         this.renderRoundSelect();
         this.renderMatches();
         this.renderChart();
         this.renderAdminSelects();
+        this.renderPlayerList(); // Panel graczy
+    },
+
+    // Generowanie kolorowych herbów
+    getTeamIcon: function(name) {
+        let cls = "team-generic";
+        const n = name.toLowerCase();
+        if(n.includes("lublin")) cls = "team-lublin";
+        else if(n.includes("wrocław") || n.includes("wroclaw")) cls = "team-wroclaw";
+        else if(n.includes("gorzów") || n.includes("gorzow")) cls = "team-gorzow";
+        else if(n.includes("toruń") || n.includes("torun")) cls = "team-torun";
+        else if(n.includes("częstochowa") || n.includes("czestochowa")) cls = "team-czestochowa";
+        else if(n.includes("leszno")) cls = "team-leszno";
+        else if(n.includes("grudziądz") || n.includes("grudziadz")) cls = "team-grudziadz";
+        else if(n.includes("zielona")) cls = "team-zielonagora";
+        
+        return `<span class="team-badge ${cls}" title="${name}"></span>`;
     },
 
     parseScore: function(str) {
@@ -384,7 +430,7 @@ const app = {
     calculate: function() {
         this.stats = {};
         this.data.players.forEach(p => {
-            this.stats[p.id] = { name: p.name, total: 0, p5:0, p3:0, p2:0, history: [] };
+            this.stats[p.id] = { name: p.name, nick: p.nick, total: 0, p5:0, p3:0, p2:0, history: [] };
         });
 
         let cumulative = {};
@@ -427,7 +473,7 @@ const app = {
         tbody.innerHTML = sorted.map((s, i) => `
             <tr class="${i===0 ? 'rank-1' : ''}">
                 <td>${i+1}.</td>
-                <td style="text-align:left; font-weight:bold;">${s.name} ${i===0?'👑':''}</td>
+                <td style="text-align:left; font-weight:bold;">${s.nick} ${i===0?'👑':''}</td>
                 <td>${s.p5}</td>
                 <td>${s.p3}</td>
                 <td>${s.p2}</td>
@@ -438,7 +484,10 @@ const app = {
 
     renderRoundSelect: function() {
         const sel = document.getElementById("roundSelect");
+        // Zachowaj wybraną opcję jeśli istnieje
+        const selected = sel.value;
         sel.innerHTML = this.data.schedule.map((r, i) => `<option value="${i}">${r.name}</option>`).join('');
+        if(selected) sel.value = selected;
     },
 
     renderMatches: function() {
@@ -457,8 +506,12 @@ const app = {
                 const ptsBadge = pts !== null ? `<span class="pts-badge p-${tip.joker ? pts/2 : pts}">${pts}</span>` : '';
                 const jokerBadge = tip.joker ? `<span class="joker-badge">JOKER</span>` : '';
 
-                return `<div class="type-box">
-                    <div style="font-size:0.8rem; color:#666;">${p.name}</div>
+                // Wyróżnij zwycięski typ
+                let winnerClass = "";
+                if (pts === 5 || (tip.joker && pts === 10)) winnerClass = "winner";
+
+                return `<div class="type-box ${winnerClass}">
+                    <div style="font-size:0.75rem; color:#666;">${p.nick}</div>
                     <strong>${tip.score}</strong> ${jokerBadge} ${ptsBadge}
                 </div>`;
             }).join('');
@@ -467,8 +520,11 @@ const app = {
             <div class="match-card">
                 <div class="match-header">
                     <div>
-                        <div class="match-date">${m.date}</div>
-                        <div class="match-teams">${m.host} - ${m.guest}</div>
+                        <div style="font-size:0.8rem; color:#888; margin-bottom:5px;">${m.date}</div>
+                        <div class="match-teams">
+                            ${this.getTeamIcon(m.host)} ${m.host} <br>
+                            ${this.getTeamIcon(m.guest)} ${m.guest}
+                        </div>
                     </div>
                     ${resHtml}
                 </div>
@@ -482,9 +538,9 @@ const app = {
     renderChart: function() {
         const ctx = document.getElementById('chartCtx').getContext('2d');
         const datasets = this.data.players.map((p, i) => {
-            const colors = ['#003366', '#d32f2f', '#fbc02d', '#388e3c', '#7b1fa2'];
+            const colors = ['#1a237e', '#e53935', '#fbc02d', '#43a047', '#8e24aa', '#00acc1'];
             return {
-                label: p.name,
+                label: p.nick,
                 data: this.stats[p.id].history,
                 borderColor: colors[i % colors.length],
                 fill: false,
@@ -502,6 +558,7 @@ const app = {
 
     renderAdminSelects: function() {
         const matchSel = document.getElementById("adminMatchSelect");
+        const currentVal = matchSel.value;
         matchSel.innerHTML = "";
         this.data.schedule.forEach((round, rIdx) => {
             round.matches.forEach((match, mIdx) => {
@@ -511,9 +568,20 @@ const app = {
                 matchSel.appendChild(opt);
             });
         });
+        if(currentVal) matchSel.value = currentVal;
 
         const playerSel = document.getElementById("adminPlayerSelect");
-        playerSel.innerHTML = this.data.players.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+        playerSel.innerHTML = this.data.players.map(p => `<option value="${p.id}">${p.name} (${p.nick})</option>`).join('');
+    },
+    
+    renderPlayerList: function() {
+        const list = document.getElementById("playerListContainer");
+        list.innerHTML = this.data.players.map((p, index) => `
+            <div class="player-list-item">
+                <span><strong>${p.name}</strong> (Nick: ${p.nick})</span>
+                <button style="background:#e53935; color:white; border:none; border-radius:3px; cursor:pointer;" onclick="admin.removePlayer(${index})">Usuń</button>
+            </div>
+        `).join('');
     },
 
     showTab: function(id) {
@@ -528,21 +596,49 @@ const app = {
         panel.classList.toggle('active');
         if(panel.classList.contains('active')) {
             const pass = prompt("Podaj hasło administratora:");
-            if(pass !== "zuzel2026") { // HASŁO
+            if(pass !== "zuzel2026") { 
                 alert("Błędne hasło!");
                 panel.classList.remove('active');
+            } else {
+                window.scrollTo(0, document.body.scrollHeight);
             }
         }
     }
 };
 
 const admin = {
+    addPlayer: function() {
+        const name = document.getElementById("newPlayerName").value;
+        const nick = document.getElementById("newPlayerNick").value;
+        if(!name || !nick) return alert("Wypełnij oba pola!");
+        
+        const newId = "p" + (new Date().getTime());
+        app.data.players.push({ id: newId, name: name, nick: nick });
+        
+        document.getElementById("newPlayerName").value = "";
+        document.getElementById("newPlayerNick").value = "";
+        
+        app.init();
+        alert("Dodano gracza! Pamiętaj o eksporcie bazy.");
+    },
+    
+    removePlayer: function(index) {
+        if(confirm("Czy na pewno usunąć tego gracza? (Jego typy też znikną przy eksporcie)")) {
+            app.data.players.splice(index, 1);
+            app.init();
+        }
+    },
+
+    refreshTipView: function() {
+        // Opcjonalne: wczytanie istniejącego typu do pól (można rozwinąć w przyszłości)
+    },
+
     saveResult: function() {
         const [rIdx, mIdx] = document.getElementById("adminMatchSelect").value.split('|');
         const val = document.getElementById("adminResult").value;
         app.data.schedule[rIdx].matches[mIdx].result = val ? val : null;
         alert("Zapisano wynik. Pamiętaj o EKSPORCIE!");
-        app.init();
+        app.calculate(); app.renderRanking(); app.renderMatches();
     },
 
     saveTip: function() {
@@ -553,7 +649,6 @@ const admin = {
 
         if(!score) return;
 
-        // Reset innych jokerów gracza w tej rundzie (opcjonalnie)
         if(joker) {
             app.data.schedule[rIdx].matches.forEach(m => {
                 if(m.tips[pId]) m.tips[pId].joker = false;
@@ -564,7 +659,7 @@ const admin = {
         app.data.schedule[rIdx].matches[mIdx].tips[pId] = { score, joker };
         
         alert("Zapisano typ. Pamiętaj o EKSPORCIE!");
-        app.init();
+        app.calculate(); app.renderRanking(); app.renderMatches();
     },
 
     exportData: function() {
@@ -574,7 +669,7 @@ const admin = {
         area.value = str;
         area.select();
         document.execCommand("copy");
-        alert("Skopiowano kod do schowka! Teraz wklej go do pliku index.html (linia 152).");
+        alert("SKOPIOWANO! Teraz idź do pliku index.html, znajdź linię 'const initialData = ...' i zastąp ją tym tekstem.");
     }
 };
 
@@ -583,5 +678,3 @@ app.init();
 
 </body>
 </html>
-
-
