@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Edytor Typera</title>
+    <style>
+        body { font-family: sans-serif; background: #eee; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h2 { margin-top: 0; color: #333; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
+        
+        .section { margin-bottom: 25px; padding: 15px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 5px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        select, input, textarea { width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box; }
+        
+        .match-row { display: flex; justify-content: space-between; align-items: center; background: white; padding: 10px; margin-bottom: 5px; border: 1px solid #eee; }
+        .input-group { display: flex; gap: 5px; align-items: center; }
+        
+        button { cursor: pointer; padding: 10px 20px; border: none; font-weight: bold; border-radius: 4px; }
+        .btn-green { background: #4caf50; color: white; }
+        .btn-blue { background: #2196f3; color: white; }
+        
+        .output-area { background: #333; color: #0f0; font-family: monospace; height: 150px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🛠️ Edytor Pliku typy.js i mecze.js</h2>
+    <p>Użyj tego narzędzia, aby łatwo wygenerować kod. Potem skopiuj go i wklej do odpowiedniego pliku na GitHub.</p>
+
+    <!-- EDYCJA GRACZY -->
+    <div class="section">
+        <h3>1. Zarządzanie Graczami</h3>
+        <p>Wpisz nicki graczy po przecinku (bez spacji po przecinku, np: Marek,Ania,Tomek)</p>
+        <input type="text" id="playersInput">
+        <button class="btn-blue" onclick="editor.updatePlayers()">Aktualizuj listę w pamięci</button>
+    </div>
+
+    <!-- EDYCJA WYNIKÓW MECZÓW -->
+    <div class="section">
+        <h3>2. Wyniki Oficjalne (dla mecze.js)</h3>
+        <label>Wybierz Rundę:</label>
+        <select id="roundSelResult" onchange="editor.renderResults()"></select>
+        <div id="resultsList"></div>
+        <button class="btn-green" onclick="editor.genMecze()">GENERUJ KOD DO mecze.js</button>
+    </div>
+
+    <!-- EDYCJA TYPÓW -->
+    <div class="section">
+        <h3>3. Typy Graczy (dla typy.js)</h3>
+        <label>Wybierz Rundę:</label>
+        <select id="roundSelTips" onchange="editor.renderTips()"></select>
+        <label>Wybierz Mecz:</label>
+        <select id="matchSelTips" onchange="editor.renderPlayerInputs()"></select>
+        
+        <div id="playerInputs"></div>
+        
+        <button class="btn-green" onclick="editor.genTypy()">GENERUJ KOD DO typy.js</button>
+    </div>
+
+    <!-- WYNIK -->
+    <div class="section">
+        <h3>📤 WYNIK (Kopiuj i Wklej)</h3>
+        <textarea id="output" class="output-area"></textarea>
+        <button onclick="document.getElementById('output').select();document.execCommand('copy')">Skopiuj do schowka</button>
+    </div>
+
+</div>
+
+<!-- Ładowanie danych -->
+<script src="mecze.js"></script>
+<script src="typy.js"></script>
+
+<script>
+const editor = {
+    // Kopia danych w pamięci edytora
+    localPlayers: [],
+    localTips: {},
+    localResults: {},
+
+    init: function() {
+        // Kopiuj dane z plików globalnych
+        this.localPlayers = [...GRACZE];
+        this.localTips = JSON.parse(JSON.stringify(TYPY));
+        
+        // Kopiuj wyniki
+        TERMINARZ.forEach(r => {
+            r.mecze.forEach(m => {
+                if(m.wynik) this.localResults[m.id] = m.wynik;
+            });
+        });
+
+        // UI Init
+        document.getElementById('playersInput').value = this.localPlayers.join(',');
+        
+        const rSelects = [document.getElementById('roundSelResult'), document.getElementById('roundSelTips')];
+        const html = TERMINARZ.map((r, i) => `<option value="${i}">${r.nazwa}</option>`).join('');
+        rSelects.forEach(s => s.innerHTML = html);
+
+        this.renderResults();
+        this.renderTips();
+    },
+
+    updatePlayers: function() {
+        const val = document.getElementById('playersInput').value;
+        this.localPlayers = val.split(',').map(s => s.trim()).filter(s => s);
+        alert("Lista graczy zaktualizowana w pamięci! Teraz możesz dodawać ich typy.");
+        this.renderPlayerInputs();
+    },
+
+    // --- WYNIKI ---
+    renderResults: function() {
+        const rIdx = document.getElementById('roundSelResult').value;
+        const div = document.getElementById('resultsList');
+        const matches = TERMINARZ[rIdx].mecze;
+
+        div.innerHTML = matches.map(m => {
+            const currentVal = this.localResults[m.id] || (m.wynik || "");
+            return `<div class="match-row">
+                <span>${m.host} vs ${m.guest}</span>
+                <input type="text" placeholder="np. 50:40" value="${currentVal}" 
+                    onchange="editor.localResults[${m.id}] = this.value" style="width:100px">
+            </div>`;
+        }).join('');
+    },
+
+    genMecze: function() {
+        // Aktualizujemy główny obiekt TERMINARZ naszymi lokalnymi wynikami
+        const exportData = JSON.parse(JSON.stringify(TERMINARZ));
+        exportData.forEach(r => {
+            r.mecze.forEach(m => {
+                if(this.localResults[m.id]) m.wynik = this.localResults[m.id];
+            });
+        });
+
+        const str = "const TERMINARZ = " + JSON.stringify(exportData, null, 4) + ";";
+        document.getElementById('output').value = str;
+        alert("Skopiuj kod z pola na dole i zastąp nim CAŁĄ zawartość pliku mecze.js");
+    },
+
+    // --- TYPY ---
+    renderTips: function() {
+        const rIdx = document.getElementById('roundSelTips').value;
+        const mSel = document.getElementById('matchSelTips');
+        const matches = TERMINARZ[rIdx].mecze;
+        mSel.innerHTML = matches.map(m => `<option value="${m.id}">${m.host} vs ${m.guest}</option>`).join('');
+        this.renderPlayerInputs();
+    },
+
+    renderPlayerInputs: function() {
+        const mId = document.getElementById('matchSelTips').value;
+        const div = document.getElementById('playerInputs');
+        
+        if(!this.localTips[mId]) this.localTips[mId] = {};
+
+        div.innerHTML = this.localPlayers.map(p => {
+            const val = this.localTips[mId][p] || "";
+            return `<div class="match-row">
+                <strong>${p}</strong>
+                <input type="text" value="${val}" placeholder="Typ np. 45:45 J" 
+                    onchange="editor.updateTip(${mId}, '${p}', this.value)">
+            </div>`;
+        }).join('');
+    },
+
+    updateTip: function(mId, player, val) {
+        if(!val) delete this.localTips[mId][player];
+        else this.localTips[mId][player] = val;
+    },
+
+    genTypy: function() {
+        let out = `/* ===================================\n   GRACZE\n   =================================== */\n`;
+        out += `const GRACZE = ${JSON.stringify(this.localPlayers, null, 4)};\n\n`;
+        out += `/* ===================================\n   TYPY\n   =================================== */\n`;
+        out += `const TYPY = ${JSON.stringify(this.localTips, null, 4)};`;
+        
+        document.getElementById('output').value = out;
+        alert("Skopiuj kod z pola na dole i zastąp nim CAŁĄ zawartość pliku typy.js");
+    }
+};
+
+// Start
+editor.init();
+</script>
+</body>
+</html>
