@@ -6,745 +6,261 @@
     <title>Typer Ekstraliga 2026</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --primary: #1a237e; --accent: #ffab00; --bg: #f4f6f8; --text: #333; --white: #ffffff; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f6f8; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #1a237e; margin-bottom: 5px; }
+        .sub { text-align: center; color: #666; margin-bottom: 20px; font-size: 0.9em; }
         
-        /* Header */
-        header { background: linear-gradient(135deg, #1a237e 0%, #283593 100%); color: var(--white); padding: 25px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-        h1 { margin: 0; font-size: 2rem; letter-spacing: 1px; font-weight: 800; }
-        .subtitle { font-size: 1rem; opacity: 0.9; margin-top: 5px; font-weight: 300; }
-
-        .container { max-width: 1100px; margin: 25px auto; padding: 0 15px; }
-
         /* Menu */
-        .nav-bar { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin-bottom: 25px; }
-        .nav-btn { background: var(--white); border: none; padding: 12px 25px; border-radius: 30px; cursor: pointer; font-weight: 600; color: #555; transition: all 0.3s ease; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .nav-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        .nav-btn.active { background: var(--primary); color: var(--white); }
-        .nav-btn.admin-mode { background: #c62828; color: white; }
-
-        /* Sekcje */
-        .section { display: none; background: var(--white); padding: 30px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
-        .section.active { display: block; animation: fadeIn 0.4s; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .menu { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        .btn { padding: 10px 20px; border: none; background: #eee; cursor: pointer; border-radius: 20px; font-weight: bold; }
+        .btn.active { background: #1a237e; color: white; }
+        .section { display: none; }
+        .section.active { display: block; }
 
         /* Tabela */
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th { background: #f5f5f5; color: #666; padding: 15px; font-size: 0.85rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
-        td { padding: 15px; border-bottom: 1px solid #eee; text-align: center; vertical-align: middle; }
-        .rank-1 { background-color: #fffde7; border-left: 5px solid var(--accent); }
-        .points-total { font-weight: 800; color: var(--primary); font-size: 1.2rem; background: #e8eaf6; padding: 5px 10px; border-radius: 8px; }
-
-        /* Loga Klubów */
-        .team-logo { width: 35px; height: 35px; object-fit: contain; vertical-align: middle; margin-right: 10px; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #eee; padding: 10px; text-align: center; }
+        td { padding: 10px; border-bottom: 1px solid #ddd; text-align: center; }
+        .rank-1 { background: #fffde7; border-left: 5px solid #ffab00; }
+        .total { font-weight: bold; color: #1a237e; font-size: 1.1em; }
+        .team-logo { width: 25px; height: 25px; vertical-align: middle; margin-right: 5px; }
 
         /* Mecze */
-        .match-card { border: 1px solid #eee; border-radius: 10px; margin-bottom: 20px; background: #fff; overflow: hidden; transition: transform 0.2s; }
-        .match-card:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        .match-header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: #fafafa; border-bottom: 1px solid #eee; }
-        .match-teams { font-weight: 700; color: #333; font-size: 1rem; line-height: 1.6; }
-        .match-team-row { display: flex; align-items: center; }
-        .match-score { font-size: 1.4rem; font-weight: 800; color: var(--primary); background: #e3f2fd; padding: 5px 15px; border-radius: 8px; min-width: 60px; text-align: center; }
+        .match { border: 1px solid #eee; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+        .match-head { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px; }
+        .teams { font-weight: bold; font-size: 1.1em; }
+        .res { font-weight: bold; font-size: 1.3em; color: #1a237e; background: #e8eaf6; padding: 5px 10px; border-radius: 5px; }
         
-        .types-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; padding: 15px; background: #fff; }
-        .type-box { background: #f9f9f9; padding: 8px; border-radius: 6px; font-size: 0.9rem; text-align: center; border: 1px solid #eee; position: relative; }
-        .type-box.winner { background: #e8f5e9; border-color: #c8e6c9; }
-        
-        .joker-badge { position: absolute; top: -6px; right: -6px; background: var(--accent); color: #000; font-size: 0.6rem; padding: 2px 6px; border-radius: 10px; font-weight: 800; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .pts-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; color: white; font-size: 0.75rem; margin-left: 5px; font-weight: bold; }
-        .p-5 { background: #2e7d32; } .p-3 { background: #1565c0; } .p-2 { background: #ef6c00; } .p-0 { background: #c62828; }
-
-        /* Admin Panel */
-        .admin-section { margin-bottom: 30px; background: #fff9c4; padding: 20px; border-radius: 8px; border: 1px solid #fbc02d; }
-        .admin-title { font-size: 1.2rem; margin-bottom: 15px; color: #f57f17; font-weight: bold; border-bottom: 2px solid #fbc02d; padding-bottom: 5px; }
-        input, select { padding: 10px; width: 100%; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; margin-bottom: 10px; }
-        .action-btn { padding: 10px 20px; cursor: pointer; border: none; border-radius: 6px; font-weight: bold; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.5px; transition: 0.2s; }
-        .btn-green { background: #43a047; color: white; } .btn-green:hover { background: #2e7d32; }
-        .btn-blue { background: #1e88e5; color: white; } .btn-blue:hover { background: #1565c0; }
-        .btn-red { background: #e53935; color: white; } .btn-red:hover { background: #c62828; }
-        .btn-yellow { background: #fbc02d; color: #333; } .btn-yellow:hover { background: #f9a825; }
-        .copy-area { width: 100%; height: 120px; font-family: monospace; font-size: 0.8rem; padding: 10px; border: 1px solid #ccc; background: #f1f1f1; }
-
-        .player-list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: white; margin-bottom: 8px; border-radius: 4px; border: 1px solid #ddd; }
-        .player-actions { display: flex; gap: 5px; }
-
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+        .box { background: #fafafa; padding: 5px; border-radius: 5px; text-align: center; font-size: 0.9em; border: 1px solid #eee; position: relative; }
+        .box.win { background: #e8f5e9; border-color: #c8e6c9; }
+        .joker { position: absolute; top: -5px; right: -5px; background: #ffab00; font-size: 0.6em; padding: 2px 5px; border-radius: 5px; font-weight: bold; }
+        .pts { display: inline-block; width: 18px; height: 18px; line-height: 18px; border-radius: 50%; color: white; font-size: 0.7em; margin-left: 5px; }
+        .p5 { background: green; } .p3 { background: #1565c0; } .p2 { background: orange; } .p0 { background: #c62828; }
     </style>
 </head>
 <body>
 
-<header>
-    <h1>🏁 Typer Ekstraliga 2026</h1>
-    <div class="subtitle">Oficjalna liga typerów</div>
-</header>
-
 <div class="container">
-    
-    <div class="nav-bar">
-        <button class="nav-btn active" onclick="app.showTab('ranking')">Tabela</button>
-        <button class="nav-btn" onclick="app.showTab('matches')">Mecze</button>
-        <button class="nav-btn" onclick="app.showTab('stats')">Wykres</button>
-        <button class="nav-btn" onclick="app.showTab('rules')">Regulamin</button>
-        <button class="nav-btn admin-mode" onclick="app.toggleAdmin()">ADMIN</button>
+    <h1>🏁 Typer Ekstraliga 2026</h1>
+    <div class="sub">Oficjalna tabela</div>
+
+    <div class="menu">
+        <button class="btn active" onclick="ui.tab('rank')">Tabela</button>
+        <button class="btn" onclick="ui.tab('matches')">Mecze</button>
+        <button class="btn" onclick="ui.tab('chart')">Wykres</button>
     </div>
 
-    <!-- TABELA -->
-    <div id="ranking" class="section active">
-        <h2>Klasyfikacja Generalna</h2>
-        <table id="rankTable">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th style="text-align:left">Nick</th>
-                    <th>5 pkt</th>
-                    <th>3 pkt</th>
-                    <th>2 pkt</th>
-                    <th>Suma</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
+    <div id="rank" class="section active">
+        <table>
+            <thead><tr><th>#</th><th style="text-align:left">Gracz</th><th>5pkt</th><th>3pkt</th><th>2pkt</th><th>Suma</th></tr></thead>
+            <tbody id="rankBody"></tbody>
         </table>
     </div>
 
-    <!-- MECZE -->
     <div id="matches" class="section">
-        <div style="text-align:center; margin-bottom:20px;">
-            <select id="roundSelect" onchange="app.renderMatches()" style="padding:10px; font-size:1rem; max-width:300px; box-shadow:0 2px 5px rgba(0,0,0,0.1);"></select>
+        <div style="text-align:center; margin-bottom:15px;">
+            <select id="roundSel" onchange="ui.renderMatches()" style="padding:10px; width:100%; max-width:300px;"></select>
         </div>
-        <div id="matchesContainer"></div>
+        <div id="matchesList"></div>
     </div>
 
-    <!-- WYKRES -->
-    <div id="stats" class="section">
+    <div id="chart" class="section">
         <canvas id="chartCtx"></canvas>
     </div>
-
-    <!-- REGULAMIN -->
-    <div id="rules" class="section">
-        <h3>Zasady Gry</h3>
-        <ul style="line-height:1.8">
-            <li><strong>Typowanie:</strong> Do 24h przed meczem.</li>
-            <li><strong>Punktacja:</strong> 
-                <span class="pts-badge p-5">5</span> Dokładny wynik, 
-                <span class="pts-badge p-3">3</span> Zwycięzca + różnica, 
-                <span class="pts-badge p-2">2</span> Zwycięzca.
-            </li>
-            <li><strong>JOKER (x2):</strong> Raz na rundę przy jednym meczu.</li>
-            <li><strong>Walkower:</strong> 40:0.</li>
-        </ul>
-    </div>
-
-    <!-- PANEL ADMINA -->
-    <div id="adminPanel" class="section" style="border-top: 5px solid #c62828;">
-        <h2 style="color:#c62828">⚙️ Panel Administratora</h2>
-        <p style="font-size:0.9rem; color:#555;"><strong>WAŻNE:</strong> Po dodaniu/edycji gracza musisz kliknąć "POBIERZ NOWĄ BAZĘ" i zaktualizować kod strony, inaczej zmiany znikną po odświeżeniu!</p>
-
-        <!-- Zarządzanie Graczami -->
-        <div class="admin-section">
-            <div class="admin-title">👥 Zarządzanie Graczami</div>
-            <div style="background:white; padding:15px; border-radius:5px; margin-bottom:15px; border:1px solid #ddd;">
-                <input type="hidden" id="editPlayerId" value="">
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                    <div>
-                        <label style="font-size:0.8rem; font-weight:bold;">Imię i Nazwisko (Admin):</label>
-                        <input type="text" id="newPlayerName" placeholder="np. Jan Kowalski">
-                    </div>
-                    <div>
-                        <label style="font-size:0.8rem; font-weight:bold;">Nick (Tabela):</label>
-                        <input type="text" id="newPlayerNick" placeholder="np. Prezes">
-                    </div>
-                </div>
-                <button id="savePlayerBtn" class="action-btn btn-green" onclick="admin.savePlayer()" style="width:100%">DODAJ GRACZA</button>
-                <button id="cancelEditBtn" class="action-btn btn-red" onclick="admin.cancelEdit()" style="width:100%; display:none; margin-top:5px;">ANULUJ EDYCJĘ</button>
-            </div>
-            
-            <div style="margin-top:10px;">
-                <strong>Lista graczy:</strong>
-                <div id="playerListContainer" style="max-height: 300px; overflow-y: auto; margin-top:5px;"></div>
-            </div>
-        </div>
-        
-        <!-- Edycja Meczów -->
-        <div class="admin-section">
-            <div class="admin-title">✏️ Edycja Wyników i Typów</div>
-            <div style="margin-bottom:10px;">
-                <label>Wybierz mecz:</label>
-                <select id="adminMatchSelect" onchange="admin.refreshTipView()"></select>
-            </div>
-            
-            <div style="background:white; padding:15px; border-radius:5px; margin-bottom:15px; border:1px solid #eee;">
-                <h4>🏆 Wynik Oficjalny</h4>
-                <div style="display:flex; gap:10px;">
-                    <input type="text" id="adminResult" placeholder="np. 50:40">
-                    <button class="action-btn btn-green" onclick="admin.saveResult()">Zapisz</button>
-                </div>
-            </div>
-
-            <div style="background:white; padding:15px; border-radius:5px; border:1px solid #eee;">
-                <h4>✍️ Dodaj/Edytuj Typ Gracza</h4>
-                <select id="adminPlayerSelect"></select>
-                <div style="display:flex; gap:10px; align-items:center; margin-top:5px;">
-                    <input type="text" id="adminTipScore" placeholder="np. 48:42" style="margin-bottom:0;">
-                    <label style="white-space:nowrap; cursor:pointer;">
-                        <input type="checkbox" id="adminTipJoker"> 🃏 JOKER
-                    </label>
-                    <button class="action-btn btn-blue" onclick="admin.saveTip()">Zapisz</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Eksport -->
-        <div style="margin-top:30px; border-top:2px dashed #ccc; padding-top:20px;">
-            <h3>📤 ZAPISZ ZMIANY (Eksport na GitHub)</h3>
-            <p>Kliknij poniżej, skopiuj kod i wklej go w notatniku w miejsce sekcji "DANE STARTOWE". To jedyny sposób na zapisanie nowych graczy!</p>
-            <button class="action-btn btn-red" onclick="admin.exportData()">POBIERZ NOWĄ BAZĘ DANYCH</button>
-            <textarea id="exportArea" class="copy-area" placeholder="Tutaj pojawi się kod do skopiowania..."></textarea>
-        </div>
-    </div>
-
 </div>
 
+<!-- ŁADOWANIE PLIKÓW Z DANYMI -->
+<script src="mecze.js"></script>
+<script src="typy.js"></script>
+
+<!-- LOGIKA -->
 <script>
-/* ==========================================================================
-   DANE STARTOWE
-   ========================================================================== */
-const initialData = {
-  "players": [],
-  "schedule": [
-    {
-      "name": "1. Runda (10-12.04)",
-      "matches": [
-        {"host": "Bayersystem GKM Grudziądz", "guest": "Gezet Stal Gorzów", "date": "10-12.04", "result": null, "tips": {}},
-        {"host": "Fogo Unia Leszno", "guest": "Krono-Plast Włókniarz Częstochowa", "date": "10-12.04", "result": null, "tips": {}},
-        {"host": "Orlen Oil Motor Lublin", "guest": "Pres Grupa Deweloperska Toruń", "date": "10-12.04", "result": null, "tips": {}},
-        {"host": "Betard Sparta Wrocław", "guest": "Stelmet Falubaz Zielona Góra", "date": "10-12.04", "result": null, "tips": {}}
-      ]
-    },
-    {
-      "name": "2. Runda (17-19.04)",
-      "matches": [
-        {"host": "Krono-Plast Włókniarz Częstochowa", "guest": "Orlen Oil Motor Lublin", "date": "17-19.04", "result": null, "tips": {}},
-        {"host": "Gezet Stal Gorzów", "guest": "Betard Sparta Wrocław", "date": "17-19.04", "result": null, "tips": {}},
-        {"host": "Pres Grupa Deweloperska Toruń", "guest": "Fogo Unia Leszno", "date": "17-19.04", "result": null, "tips": {}},
-        {"host": "Stelmet Falubaz Zielona Góra", "guest": "Bayersystem GKM Grudziądz", "date": "17-19.04", "result": null, "tips": {}}
-      ]
-    },
-    {
-      "name": "3. Runda (24-26.04)",
-      "matches": [
-        {"host": "Krono-Plast Włókniarz Częstochowa", "guest": "Pres Grupa Deweloperska Toruń", "date": "24-26.04", "result": null, "tips": {}},
-        {"host": "Bayersystem GKM Grudziądz", "guest": "Betard Sparta Wrocław", "date": "24-26.04", "result": null, "tips": {}},
-        {"host": "Fogo Unia Leszno", "guest": "Gezet Stal Gorzów", "date": "24-26.04", "result": null, "tips": {}},
-        {"host": "Orlen Oil Motor Lublin", "guest": "Stelmet Falubaz Zielona Góra", "date": "24-26.04", "result": null, "tips": {}}
-      ]
-    },
-    {
-      "name": "4. Runda (3, 24.05)",
-      "matches": [
-        {"host": "Pres Grupa Deweloperska Toruń", "guest": "Bayersystem GKM Grudziądz", "date": "03/24.05", "result": null, "tips": {}},
-        {"host": "Betard Sparta Wrocław", "guest": "Fogo Unia Leszno", "date": "03/24.05", "result": null, "tips": {}},
-        {"host": "Gezet Stal Gorzów", "guest": "Orlen Oil Motor Lublin", "date": "03/24.05", "result": null, "tips": {}},
-        {"host": "Stelmet Falubaz Zielona Góra", "guest": "Krono-Plast Włókniarz Częstochowa", "date": "03/24.05", "result": null, "tips": {}}
-      ]
-    },
-    {
-      "name": "5. Runda (8-10.05)",
-      "matches": [
-        {"host": "Krono-Plast Włókniarz Częstochowa", "guest": "Gezet Stal Gorzów", "date": "08-10.05", "result": null, "tips": {}},
-        {"host": "Bayersystem GKM Grudziądz", "guest": "Fogo Unia Leszno", "date": "08-10.05", "result": null, "tips": {}},
-        {"host": "Orlen Oil Motor Lublin", "guest": "Betard Sparta Wrocław", "date": "08-10.05", "result": null, "tips": {}},
-        {"host": "Pres Grupa Deweloperska Toruń", "guest": "Stelmet Falubaz Zielona Góra", "date": "08-10.05", "result": null, "tips": {}}
-      ]
-    },
-    {
-      "name": "6. Runda (15-17.05)",
-      "matches": [
-        {"host": "Gezet Stal Gorzów", "guest": "Stelmet Falubaz Zielona Góra", "date": "15-17.05", "result": null, "tips": {}},
-        {"host": "Bayersystem GKM Grudziądz", "guest": "Krono-Plast Włókniarz Częstochowa", "date": "15-17.05", "result": null, "tips": {}},
-        {"host": "Fogo Unia Leszno", "guest": "Orlen Oil Motor Lublin", "date": "15-17.05", "result": null, "tips": {}},
-        {"host": "Betard Sparta Wrocław", "guest": "Pres Grupa Deweloperska Toruń", "date": "15-17.05", "result": null, "tips": {}}
-      ]
-    },
-    {
-      "name": "7. Runda (29-31.05)",
-      "matches": [
-        {"host": "Krono-Plast Włókniarz Częstochowa", "guest": "Betard Sparta Wrocław", "date": "29-31.05", "result": null, "tips": {}},
-        {"host": "Orlen Oil Motor Lublin", "guest": "Bayersystem GKM Grudziądz", "date": "29-31.05", "result": null, "tips": {}},
-        {"host": "Pres Grupa Deweloperska Toruń", "guest": "Gezet Stal Gorzów", "date": "29-31.05", "result": null, "tips": {}},
-        {"host": "Stelmet Falubaz Zielona Góra", "guest": "Fogo Unia Leszno", "date": "29-31.05", "result": null, "tips": {}}
-      ]
-    },
-    {
-      "name": "8. Runda (12-14.06)",
-      "matches": [
-        {"host": "Bayersystem GKM Grudziądz", "guest": "Stelmet Falubaz Zielona Góra", "date": "12-14.06", "result": null, "tips": {}},
-        {"host": "Fogo Unia Leszno", "guest": "Pres Grupa Deweloperska Toruń", "date": "12-14.06", "result": null, "tips": {}},
-        {"host": "Orlen Oil Motor Lublin", "guest": "Krono-Plast Włókniarz Częstochowa", "date": "12-14.06", "result": null, "tips": {}},
-        {"host": "Betard Sparta Wrocław", "guest": "Gezet Stal Gorzów", "date": "12-14.06", "result": null, "tips": {}}
-      ]
-    },
-    {
-      "name": "9. Runda (19-21.06)",
-      "matches": [
-        {"host": "Krono-Plast Włókniarz Częstochowa", "guest": "Fogo Unia Leszno", "date": "19-21.06", "result": null, "tips": {}},
-        {"host": "Gezet Stal Gorzów", "guest": "Bayersystem GKM Grudziądz", "date": "19-21.06", "result": null, "tips": {}},
-        {"host": "Pres Grupa Deweloperska Toruń", "guest": "Orlen Oil Motor Lublin", "date": "19-21.06", "result": null, "tips": {}},
-        {"host": "Stelmet Falubaz Zielona Góra", "guest": "Betard Sparta Wrocław", "date": "19-21.06", "result": null, "tips": {}}
-      ]
-    },
-    {
-      "name": "10. Runda (26-28.06)",
-      "matches": [
-        {"host": "Gezet Stal Gorzów", "guest": "Fogo Unia Leszno", "date": "26-28.06", "result": null, "tips": {}},
-        {"host": "Pres Grupa Deweloperska Toruń", "guest": "Krono-Plast Włókniarz Częstochowa", "date": "26-28.06", "result": null, "tips": {}},
-        {"host": "Betard Sparta Wrocław", "guest": "Bayersystem GKM Grudziądz", "date": "26-28.06", "result": null, "tips": {}},
-        {"host": "Stelmet Falubaz Zielona Góra", "guest": "Orlen Oil Motor Lublin", "date": "26-28.06", "result": null, "tips": {}}
-      ]
-    },
-    {
-      "name": "11. Runda (3-5.07)",
-      "matches": [
-        {"host": "Krono-Plast Włókniarz Częstochowa", "guest": "Stelmet Falubaz Zielona Góra", "date": "03-05.07", "result": null, "tips": {}},
-        {"host": "Bayersystem GKM Grudziądz", "guest": "Pres Grupa Deweloperska Toruń", "date": "03-05.07", "result": null, "tips": {}},
-        {"host": "Fogo Unia Leszno", "guest": "Betard Sparta Wrocław", "date": "03-05.07", "result": null, "tips": {}},
-        {"host": "Orlen Oil Motor Lublin", "guest": "Gezet Stal Gorzów", "date": "03-05.07", "result": null, "tips": {}}
-      ]
-    },
-    {
-      "name": "12. Runda (2, 9.08)",
-      "matches": [
-        {"host": "Gezet Stal Gorzów", "guest": "Krono-Plast Włókniarz Częstochowa", "date": "02/09.08", "result": null, "tips": {}},
-        {"host": "Fogo Unia Leszno", "guest": "Bayersystem GKM Grudziądz", "date": "02/09.08", "result": null, "tips": {}},
-        {"host": "Betard Sparta Wrocław", "guest": "Orlen Oil Motor Lublin", "date": "02/09.08", "result": null, "tips": {}},
-        {"host": "Stelmet Falubaz Zielona Góra", "guest": "Pres Grupa Deweloperska Toruń", "date": "02/09.08", "result": null, "tips": {}}
-      ]
-    },
-    {
-      "name": "13. Runda (14-16.08)",
-      "matches": [
-        {"host": "Krono-Plast Włókniarz Częstochowa", "guest": "Bayersystem GKM Grudziądz", "date": "14-16.08", "result": null, "tips": {}},
-        {"host": "Orlen Oil Motor Lublin", "guest": "Fogo Unia Leszno", "date": "14-16.08", "result": null, "tips": {}},
-        {"host": "Pres Grupa Deweloperska Toruń", "guest": "Betard Sparta Wrocław", "date": "14-16.08", "result": null, "tips": {}},
-        {"host": "Stelmet Falubaz Zielona Góra", "guest": "Gezet Stal Gorzów", "date": "14-16.08", "result": null, "tips": {}}
-      ]
-    },
-    {
-      "name": "14. Runda (21-23.08)",
-      "matches": [
-        {"host": "Gezet Stal Gorzów", "guest": "Pres Grupa Deweloperska Toruń", "date": "21-23.08", "result": null, "tips": {}},
-        {"host": "Bayersystem GKM Grudziądz", "guest": "Orlen Oil Motor Lublin", "date": "21-23.08", "result": null, "tips": {}},
-        {"host": "Fogo Unia Leszno", "guest": "Stelmet Falubaz Zielona Góra", "date": "21-23.08", "result": null, "tips": {}},
-        {"host": "Betard Sparta Wrocław", "guest": "Krono-Plast Włókniarz Częstochowa", "date": "21-23.08", "result": null, "tips": {}}
-      ]
-    },
-    {
-      "name": "15. Runda (Play-off/down)",
-      "matches": [
-        {"host": "Półfinał 1", "guest": "TBD", "date": "06.09", "result": null, "tips": {}},
-        {"host": "Półfinał 2", "guest": "TBD", "date": "06.09", "result": null, "tips": {}},
-        {"host": "Mecz o 5-6 msc (1)", "guest": "TBD", "date": "30.08", "result": null, "tips": {}},
-        {"host": "Mecz o 5-6 msc (2)", "guest": "TBD", "date": "30.08", "result": null, "tips": {}}
-      ]
-    },
-    {
-      "name": "16. Runda (Rewanże 1)",
-      "matches": [
-        {"host": "Półfinał 1 (Rewanż)", "guest": "TBD", "date": "13.09", "result": null, "tips": {}},
-        {"host": "Półfinał 2 (Rewanż)", "guest": "TBD", "date": "13.09", "result": null, "tips": {}},
-        {"host": "Mecz o 5-6 msc (1R)", "guest": "TBD", "date": "04.09", "result": null, "tips": {}},
-        {"host": "Mecz o 5-6 msc (2R)", "guest": "TBD", "date": "04.09", "result": null, "tips": {}}
-      ]
-    },
-    {
-      "name": "17. Runda (Finały 1)",
-      "matches": [
-        {"host": "FINAŁ", "guest": "TBD", "date": "20.09", "result": null, "tips": {}},
-        {"host": "Mecz o 3. miejsce", "guest": "TBD", "date": "20.09", "result": null, "tips": {}},
-        {"host": "Mecz o 7. miejsce", "guest": "TBD", "date": "13.09", "result": null, "tips": {}}
-      ]
-    },
-    {
-      "name": "18. Runda (Finały 2)",
-      "matches": [
-        {"host": "FINAŁ (Rewanż)", "guest": "TBD", "date": "27.09", "result": null, "tips": {}},
-        {"host": "Mecz o 3. miejsce (Rewanż)", "guest": "TBD", "date": "27.09", "result": null, "tips": {}},
-        {"host": "Mecz o 7. miejsce (Rewanż)", "guest": "TBD", "date": "18.09", "result": null, "tips": {}}
-      ]
-    }
-  ]
-};
-/* KONIEC DANYCH */
-
-
 const app = {
-    data: null,
     stats: {},
-
+    
     init: function() {
-        // Używamy danych z initialData. 
-        // UWAGA: initialData w kodzie jest const, ale jego zawartość (tablice/obiekty) jest mutowalna.
-        // Działamy bezpośrednio na initialData, aby funkcje admina działały poprawnie.
-        this.data = initialData; 
-
-        this.calculate();
-        this.renderRanking();
-        this.renderRoundSelect();
-        this.renderMatches();
-        this.renderChart();
-        this.renderAdminSelects();
-        this.renderPlayerList();
+        if(typeof TERMINARZ === 'undefined' || typeof GRACZE === 'undefined') {
+            alert("BŁĄD: Nie znaleziono plików mecze.js lub typy.js!");
+            return;
+        }
+        this.calc();
+        ui.init();
     },
 
     getTeamIcon: function(name) {
         const n = name.toLowerCase();
         let url = "";
-
-        if(n.includes("toruń") || n.includes("torun")) url = "https://v.wpimg.pl/MDc4NzEuYiUCVjhJag5vMEEObBMsV2FmFhZ0WGpBdTxMRygNNVs6NABQIFQ1GWIwAlM9VXNMfCBaBX4fJ0IvfAUGEUl9QH1zWwN_VDUbKmYe";
-        else if(n.includes("lublin")) url = "https://v.wpimg.pl/MjQ1NDIuYgswUzh3Zg5vHnMLbC0gV2FIJBN0ZmZBdRJ-QigzOVs6GjJVIGo5GWIeMFY9a3xNK1hnAC12fUQrXDIJEXN8RH9eZAV8ajkbKkgs";
-        else if(n.includes("wrocław") || n.includes("wroclaw")) url = "https://v.wpimg.pl/NDQ3NzUuYSUwUThJeg5sMHMJbBM8V2JmJBF0WHpBdjx-QCgNJVs5NDJXIFQlGWEwMFQ9VWNHfXU1BS8ZZ0J6J2UHEU9jR3pwZgR7VCUbKWYs";
-        else if(n.includes("grudziądz") || n.includes("grudziadz")) url = "https://v.wpimg.pl/MzI3OTUuYhsoUTlneg5vDmsJbT08V2FYPBF1dnpBdQJmQCkjJVs6CipXIXolGWIOKFQ8e2AQeB57V3tgNkZ1Sn8GEGVhR35Ifgp6eiUbKlg0";
-        else if(n.includes("zielona")) url = "https://v.wpimg.pl/OTAxMDMuYDUgGjt3Yg5tIGNCby0kV2N2NFp3ZmJBdyxuCyszPVs4JCIcI2o9GWAgIB8-a3tAdmF4TXwhexQrZCVLEnx4TXZkcEh-aj0bKHY8";
-        else if(n.includes("częstochowa") || n.includes("czestochowa")) url = "https://v.wpimg.pl/NTQ0MzYuYTUwUjtJdg5sIHMKbxMwV2J2JBJ3WHZBdix-QysNKVs5JDJUI1QpGWEgMFc-VWwQezBjUStPa0B4YmcDEk1gR3tgZQN7VCkbKXYs";
-        else if(n.includes("gorzów") || n.includes("gorzow")) url = "https://v.wpimg.pl/MDE2OTMuYiUkUDlnYg5vMGcIbT0kV2FmMBB1dmJBdTxqQSkjPVs6NCZWIXo9GWIwJFU8e3gQeCB3UXpseBR-dHYFEGB1RX11cwt8ej0bKmY4";
-        else if(n.includes("leszno")) url = "https://v.wpimg.pl/OTM2MjAuYDUsUDtZbg5tIG8IbwMoV2N2OBB3SG5BdyxiQSsdMVs4JC5WI0QxGWAgLFU-RXQQejB-A3sPcBd5NikKElp3RXZnewB9RDEbKHYw";
-
-        if(url) return `<img src="${url}" class="team-logo" alt="${name}">`;
-        return "";
+        if(n.includes("toruń")||n.includes("torun")) url="https://v.wpimg.pl/MDc4NzEuYiUCVjhJag5vMEEObBMsV2FmFhZ0WGpBdTxMRygNNVs6NABQIFQ1GWIwAlM9VXNMfCBaBX4fJ0IvfAUGEUl9QH1zWwN_VDUbKmYe";
+        else if(n.includes("lublin")) url="https://v.wpimg.pl/MjQ1NDIuYgswUzh3Zg5vHnMLbC0gV2FIJBN0ZmZBdRJ-QigzOVs6GjJVIGo5GWIeMFY9a3xNK1hnAC12fUQrXDIJEXN8RH9eZAV8ajkbKkgs";
+        else if(n.includes("wrocław")||n.includes("wroclaw")) url="https://v.wpimg.pl/NDQ3NzUuYSUwUThJeg5sMHMJbBM8V2JmJBF0WHpBdjx-QCgNJVs5NDJXIFQlGWEwMFQ9VWNHfXU1BS8ZZ0J6J2UHEU9jR3pwZgR7VCUbKWYs";
+        else if(n.includes("grudziądz")) url="https://v.wpimg.pl/MzI3OTUuYhsoUTlneg5vDmsJbT08V2FYPBF1dnpBdQJmQCkjJVs6CipXIXolGWIOKFQ8e2AQeB57V3tgNkZ1Sn8GEGVhR35Ifgp6eiUbKlg0";
+        else if(n.includes("zielona")) url="https://v.wpimg.pl/OTAxMDMuYDUgGjt3Yg5tIGNCby0kV2N2NFp3ZmJBdyxuCyszPVs4JCIcI2o9GWAgIB8-a3tAdmF4TXwhexQrZCVLEnx4TXZkcEh-aj0bKHY8";
+        else if(n.includes("częstochowa")) url="https://v.wpimg.pl/NTQ0MzYuYTUwUjtJdg5sIHMKbxMwV2J2JBJ3WHZBdix-QysNKVs5JDJUI1QpGWEgMFc-VWwQezBjUStPa0B4YmcDEk1gR3tgZQN7VCkbKXYs";
+        else if(n.includes("gorzów")) url="https://v.wpimg.pl/MDE2OTMuYiUkUDlnYg5vMGcIbT0kV2FmMBB1dmJBdTxqQSkjPVs6NCZWIXo9GWIwJFU8e3gQeCB3UXpseBR-dHYFEGB1RX11cwt8ej0bKmY4";
+        else if(n.includes("leszno")) url="https://v.wpimg.pl/OTM2MjAuYDUsUDtZbg5tIG8IbwMoV2N2OBB3SG5BdyxiQSsdMVs4JC5WI0QxGWAgLFU-RXQQejB-A3sPcBd5NikKElp3RXZnewB9RDEbKHYw";
+        
+        return url ? `<img src="${url}" class="team-logo">` : '';
     },
 
-    parseScore: function(str) {
-        if (!str || !str.includes(':')) return null;
-        const p = str.split(':');
+    parse: function(s) {
+        if(!s) return null;
+        let p = s.replace('J','').trim().split(':');
+        if(p.length < 2) return null;
         return { h: parseInt(p[0]), g: parseInt(p[1]) };
     },
 
-    calcPoints: function(realStr, tipStr, isJoker) {
-        if (!realStr || !tipStr) return 0;
-        const r = this.parseScore(realStr);
-        const t = this.parseScore(tipStr);
-        if (!r || !t) return 0;
-
-        let pts = 0;
-        const rDiff = r.h - r.g;
-        const tDiff = t.h - t.g;
-        const rWin = rDiff > 0 ? 1 : (rDiff < 0 ? 2 : 0);
-        const tWin = tDiff > 0 ? 1 : (tDiff < 0 ? 2 : 0);
-
-        if (r.h === t.h && r.g === t.g) pts = 5;
-        else if (rWin === tWin && rDiff === tDiff) pts = 3;
-        else if (rWin === tWin) pts = 2;
-
-        return isJoker ? pts * 2 : pts;
-    },
-
-    calculate: function() {
-        this.stats = {};
-        this.data.players.forEach(p => {
-            this.stats[p.id] = { name: p.name, nick: p.nick, total: 0, p5:0, p3:0, p2:0, history: [] };
-        });
-
+    calc: function() {
+        GRACZE.forEach(p => this.stats[p] = { name: p, total: 0, p5:0, p3:0, p2:0, history: [] });
+        
         let cumulative = {};
-        this.data.players.forEach(p => cumulative[p.id] = 0);
+        GRACZE.forEach(p => cumulative[p] = 0);
 
-        this.data.schedule.forEach(round => {
+        TERMINARZ.forEach(round => {
             let roundPts = {};
-            this.data.players.forEach(p => roundPts[p.id] = 0);
+            GRACZE.forEach(p => roundPts[p] = 0);
 
-            round.matches.forEach(m => {
-                if(m.result) {
-                    this.data.players.forEach(p => {
-                        const tip = m.tips[p.id];
-                        if(tip) {
-                            const pts = this.calcPoints(m.result, tip.score, tip.joker);
-                            const basePts = tip.joker ? pts/2 : pts;
+            round.mecze.forEach(m => {
+                if(m.wynik) {
+                    const matchTips = TYPY[m.id] || {};
+                    GRACZE.forEach(p => {
+                        const tipRaw = matchTips[p];
+                        if(tipRaw) {
+                            const isJoker = tipRaw.toUpperCase().includes('J');
+                            const r = this.parse(m.wynik);
+                            const t = this.parse(tipRaw);
                             
-                            this.stats[p.id].total += pts;
-                            roundPts[p.id] += pts;
+                            let pts = 0;
+                            if(r && t) {
+                                let rd = r.h - r.g;
+                                let td = t.h - t.g;
+                                let rw = rd > 0 ? 1 : (rd < 0 ? 2 : 0);
+                                let tw = td > 0 ? 1 : (td < 0 ? 2 : 0);
+                                
+                                if(r.h===t.h && r.g===t.g) pts = 5;
+                                else if(rw===tw && rd===td) pts = 3;
+                                else if(rw===tw) pts = 2;
+                            }
                             
-                            if(basePts === 5) this.stats[p.id].p5++;
-                            else if(basePts === 3) this.stats[p.id].p3++;
-                            else if(basePts === 2) this.stats[p.id].p2++;
+                            const finalPts = isJoker ? pts * 2 : pts;
+                            this.stats[p].total += finalPts;
+                            roundPts[p] += finalPts;
+
+                            if(pts === 5) this.stats[p].p5++;
+                            else if(pts === 3) this.stats[p].p3++;
+                            else if(pts === 2) this.stats[p].p2++;
                         }
                     });
                 }
             });
-
-            this.data.players.forEach(p => {
-                cumulative[p.id] += roundPts[p.id];
-                this.stats[p.id].history.push(cumulative[p.id]);
+            GRACZE.forEach(p => {
+                cumulative[p] += roundPts[p];
+                this.stats[p].history.push(cumulative[p]);
             });
         });
+    }
+};
+
+const ui = {
+    init: function() {
+        this.renderRank();
+        const sel = document.getElementById("roundSel");
+        sel.innerHTML = TERMINARZ.map((r,i) => `<option value="${i}">${r.nazwa}</option>`).join('');
+        this.renderMatches();
+        this.renderChart();
     },
 
-    renderRanking: function() {
-        const tbody = document.querySelector("#rankTable tbody");
-        const sorted = Object.values(this.stats).sort((a,b) => b.total - a.total);
-        
-        tbody.innerHTML = sorted.map((s, i) => `
-            <tr class="${i===0 ? 'rank-1' : ''}">
+    tab: function(id) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+        event.target.classList.add('active');
+    },
+
+    renderRank: function() {
+        const tb = document.getElementById("rankBody");
+        const sorted = Object.values(app.stats).sort((a,b) => b.total - a.total);
+        tb.innerHTML = sorted.map((s,i) => `
+            <tr class="${i===0?'rank-1':''}">
                 <td>${i+1}.</td>
-                <td style="text-align:left; font-weight:bold;">${s.nick} ${i===0?'👑':''}</td>
-                <td>${s.p5}</td>
-                <td>${s.p3}</td>
-                <td>${s.p2}</td>
-                <td><span class="points-total">${s.total}</span></td>
+                <td style="text-align:left; font-weight:bold;">${s.name} ${i===0?'👑':''}</td>
+                <td>${s.p5}</td><td>${s.p3}</td><td>${s.p2}</td>
+                <td class="total">${s.total}</td>
             </tr>
         `).join('');
     },
 
-    renderRoundSelect: function() {
-        const sel = document.getElementById("roundSelect");
-        const selected = sel.value;
-        sel.innerHTML = this.data.schedule.map((r, i) => `<option value="${i}">${r.name}</option>`).join('');
-        if(selected) sel.value = selected;
-    },
-
     renderMatches: function() {
-        const rIdx = document.getElementById("roundSelect").value || 0;
-        const round = this.data.schedule[rIdx];
-        const container = document.getElementById("matchesContainer");
-
-        container.innerHTML = round.matches.map(m => {
-            const resHtml = m.result ? `<span class="match-score">${m.result}</span>` : `<span style="color:#ccc; font-weight:bold;">--:--</span>`;
+        const ridx = document.getElementById("roundSel").value || 0;
+        const round = TERMINARZ[ridx];
+        const div = document.getElementById("matchesList");
+        
+        div.innerHTML = round.mecze.map(m => {
+            const res = m.wynik ? `<span class="res">${m.wynik}</span>` : `<span style="color:#ccc">--:--</span>`;
             
-            const tipsHtml = this.data.players.map(p => {
-                const tip = m.tips[p.id];
-                if(!tip) return '';
+            const tips = GRACZE.map(p => {
+                const matchTips = TYPY[m.id] || {};
+                const raw = matchTips[p];
+                if(!raw) return '';
                 
-                const pts = m.result ? this.calcPoints(m.result, tip.score, tip.joker) : null;
-                const ptsBadge = pts !== null ? `<span class="pts-badge p-${tip.joker ? pts/2 : pts}">${pts}</span>` : '';
-                const jokerBadge = tip.joker ? `<span class="joker-badge">JOKER</span>` : '';
+                const isJoker = raw.toUpperCase().includes('J');
+                const cleanScore = raw.replace('J','').trim();
+                
+                // Kalkulacja do kolorków
+                let pts = 0;
+                if(m.wynik) {
+                    const r = app.parse(m.wynik);
+                    const t = app.parse(cleanScore);
+                    if(r&&t) {
+                        let rd=r.h-r.g, td=t.h-t.g;
+                        if(r.h===t.h && r.g===t.g) pts=5;
+                        else if((rd>0)===(td>0) && (rd<0)===(td<0) && rd===td) pts=3;
+                        else if((rd>0)===(td>0) && (rd<0)===(td<0)) pts=2;
+                    }
+                }
+                const finalPts = isJoker ? pts*2 : pts;
+                const winClass = (m.wynik && pts === 5) ? 'win' : '';
+                const ptsHtml = m.wynik ? `<span class="pts p${pts}">${finalPts}</span>` : '';
+                const jokerHtml = isJoker ? `<span class="joker">JOKER</span>` : '';
 
-                let winnerClass = "";
-                if (pts === 5 || (tip.joker && pts === 10)) winnerClass = "winner";
-
-                return `<div class="type-box ${winnerClass}">
-                    <div style="font-size:0.75rem; color:#666;">${p.nick}</div>
-                    <strong>${tip.score}</strong> ${jokerBadge} ${ptsBadge}
+                return `<div class="box ${winClass}">
+                    <div style="color:#777; font-size:0.8em">${p}</div>
+                    <strong>${cleanScore}</strong> ${jokerHtml} ${ptsHtml}
                 </div>`;
             }).join('');
 
-            return `
-            <div class="match-card">
-                <div class="match-header">
+            return `<div class="match">
+                <div class="match-head">
                     <div>
-                        <div style="font-size:0.8rem; color:#888; margin-bottom:5px;">${m.date}</div>
-                        <div class="match-teams">
-                            <div class="match-team-row">${this.getTeamIcon(m.host)} ${m.host}</div>
-                            <div class="match-team-row">${this.getTeamIcon(m.guest)} ${m.guest}</div>
-                        </div>
+                        <div style="font-size:0.8em; color:#999">${m.data}</div>
+                        <div class="teams">${app.getTeamIcon(m.host)} ${m.host}<br>${app.getTeamIcon(m.guest)} ${m.guest}</div>
                     </div>
-                    ${resHtml}
+                    ${res}
                 </div>
-                <div class="types-container">
-                    ${tipsHtml}
-                </div>
+                <div class="grid">${tips}</div>
             </div>`;
         }).join('');
     },
 
     renderChart: function() {
-        const ctx = document.getElementById('chartCtx').getContext('2d');
-        const datasets = this.data.players.map((p, i) => {
-            const colors = ['#1a237e', '#e53935', '#fbc02d', '#43a047', '#8e24aa', '#00acc1'];
-            return {
-                label: p.nick,
-                data: this.stats[p.id].history,
-                borderColor: colors[i % colors.length],
-                fill: false,
-                tension: 0.1
-            };
-        });
-
-        if(window.myChart) window.myChart.destroy();
-        window.myChart = new Chart(ctx, {
+        new Chart(document.getElementById('chartCtx'), {
             type: 'line',
-            data: { labels: this.data.schedule.map(r => r.name), datasets: datasets },
-            options: { responsive: true }
-        });
-    },
-
-    renderAdminSelects: function() {
-        const matchSel = document.getElementById("adminMatchSelect");
-        const currentVal = matchSel.value;
-        matchSel.innerHTML = "";
-        this.data.schedule.forEach((round, rIdx) => {
-            round.matches.forEach((match, mIdx) => {
-                const opt = document.createElement("option");
-                opt.value = `${rIdx}|${mIdx}`;
-                opt.text = `${round.name}: ${match.host} vs ${match.guest}`;
-                matchSel.appendChild(opt);
-            });
-        });
-        if(currentVal) matchSel.value = currentVal;
-
-        const playerSel = document.getElementById("adminPlayerSelect");
-        const currentPlayer = playerSel.value;
-        playerSel.innerHTML = this.data.players.map(p => `<option value="${p.id}">${p.name} (${p.nick})</option>`).join('');
-        if(currentPlayer) playerSel.value = currentPlayer;
-    },
-    
-    renderPlayerList: function() {
-        const list = document.getElementById("playerListContainer");
-        list.innerHTML = this.data.players.map((p, index) => `
-            <div class="player-list-item">
-                <span><strong>${p.name}</strong> (${p.nick})</span>
-                <div class="player-actions">
-                    <button class="action-btn btn-yellow" style="padding:5px 10px; font-size:0.7rem;" onclick="admin.editPlayer('${p.id}')">EDYTUJ</button>
-                    <button class="action-btn btn-red" style="padding:5px 10px; font-size:0.7rem;" onclick="admin.removePlayer(${index})">USUŃ</button>
-                </div>
-            </div>
-        `).join('');
-    },
-
-    showTab: function(id) {
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        event.target.classList.add('active');
-    },
-
-    toggleAdmin: function() {
-        const panel = document.getElementById('adminPanel');
-        panel.classList.toggle('active');
-        if(panel.classList.contains('active')) {
-            const pass = prompt("Podaj hasło administratora:");
-            if(pass !== "zuzel2026") { 
-                alert("Błędne hasło!");
-                panel.classList.remove('active');
-            } else {
-                window.scrollTo(0, document.body.scrollHeight);
+            data: {
+                labels: TERMINARZ.map(r => r.nazwa),
+                datasets: GRACZE.map((p,i) => ({
+                    label: p,
+                    data: app.stats[p].history,
+                    borderColor: `hsl(${i*50}, 70%, 50%)`,
+                    fill: false,
+                    tension: 0.1
+                }))
             }
-        }
-    }
-};
-
-const admin = {
-    // Flag to check if adding or editing
-    isEditing: false,
-
-    savePlayer: function() {
-        const name = document.getElementById("newPlayerName").value;
-        const nick = document.getElementById("newPlayerNick").value;
-        const id = document.getElementById("editPlayerId").value;
-
-        if(!name || !nick) return alert("Wypełnij oba pola!");
-        
-        if (this.isEditing && id) {
-            // Edit existing
-            const player = app.data.players.find(p => p.id === id);
-            if (player) {
-                player.name = name;
-                player.nick = nick;
-            }
-            this.cancelEdit();
-        } else {
-            // Add new
-            const newId = "p" + (new Date().getTime());
-            app.data.players.push({ id: newId, name: name, nick: nick });
-        }
-        
-        // Clear fields
-        document.getElementById("newPlayerName").value = "";
-        document.getElementById("newPlayerNick").value = "";
-        
-        // Refresh UI manually
-        app.calculate();
-        app.renderRanking();
-        app.renderMatches(); // Re-render matches to show new player tips area
-        app.renderChart();
-        app.renderAdminSelects();
-        app.renderPlayerList();
-        
-        alert("Zapisano gracza! PAMIĘTAJ O EKSPORCIE BAZY (Przycisk na dole)!");
-    },
-    
-    editPlayer: function(id) {
-        const player = app.data.players.find(p => p.id === id);
-        if(!player) return;
-
-        document.getElementById("newPlayerName").value = player.name;
-        document.getElementById("newPlayerNick").value = player.nick;
-        document.getElementById("editPlayerId").value = player.id;
-        
-        document.getElementById("savePlayerBtn").innerText = "ZAPISZ ZMIANY";
-        document.getElementById("savePlayerBtn").classList.remove("btn-green");
-        document.getElementById("savePlayerBtn").classList.add("btn-blue");
-        document.getElementById("cancelEditBtn").style.display = "inline-block";
-        
-        this.isEditing = true;
-    },
-
-    cancelEdit: function() {
-        document.getElementById("newPlayerName").value = "";
-        document.getElementById("newPlayerNick").value = "";
-        document.getElementById("editPlayerId").value = "";
-        
-        document.getElementById("savePlayerBtn").innerText = "DODAJ GRACZA";
-        document.getElementById("savePlayerBtn").classList.remove("btn-blue");
-        document.getElementById("savePlayerBtn").classList.add("btn-green");
-        document.getElementById("cancelEditBtn").style.display = "none";
-        
-        this.isEditing = false;
-    },
-
-    removePlayer: function(index) {
-        if(confirm("Czy na pewno usunąć tego gracza? (Pamiętaj o eksporcie!)")) {
-            app.data.players.splice(index, 1);
-            app.calculate();
-            app.renderRanking();
-            app.renderMatches();
-            app.renderChart();
-            app.renderAdminSelects();
-            app.renderPlayerList();
-        }
-    },
-
-    refreshTipView: function() {
-        // Placeholder
-    },
-
-    saveResult: function() {
-        const [rIdx, mIdx] = document.getElementById("adminMatchSelect").value.split('|');
-        const val = document.getElementById("adminResult").value;
-        app.data.schedule[rIdx].matches[mIdx].result = val ? val : null;
-        alert("Zapisano wynik. Pamiętaj o EKSPORCIE!");
-        app.calculate(); app.renderRanking(); app.renderMatches();
-    },
-
-    saveTip: function() {
-        const [rIdx, mIdx] = document.getElementById("adminMatchSelect").value.split('|');
-        const pId = document.getElementById("adminPlayerSelect").value;
-        const score = document.getElementById("adminTipScore").value;
-        const joker = document.getElementById("adminTipJoker").checked;
-
-        if(!score) return;
-
-        if(joker) {
-            app.data.schedule[rIdx].matches.forEach(m => {
-                if(m.tips[pId]) m.tips[pId].joker = false;
-            });
-        }
-
-        if(!app.data.schedule[rIdx].matches[mIdx].tips) app.data.schedule[rIdx].matches[mIdx].tips = {};
-        app.data.schedule[rIdx].matches[mIdx].tips[pId] = { score, joker };
-        
-        alert("Zapisano typ. Pamiętaj o EKSPORCIE!");
-        app.calculate(); app.renderRanking(); app.renderMatches();
-    },
-
-    exportData: function() {
-        const json = JSON.stringify(app.data, null, 2);
-        const str = `const initialData = ${json};`;
-        const area = document.getElementById("exportArea");
-        area.value = str;
-        area.select();
-        document.execCommand("copy");
-        alert("SKOPIOWANO! Teraz idź do pliku index.html, znajdź linię 'const initialData = ...' i zastąp ją tym tekstem.");
+        });
     }
 };
 
 app.init();
 </script>
-
 </body>
 </html>
