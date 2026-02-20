@@ -62,9 +62,11 @@
         .btn-green { background: #43a047; color: white; } .btn-green:hover { background: #2e7d32; }
         .btn-blue { background: #1e88e5; color: white; } .btn-blue:hover { background: #1565c0; }
         .btn-red { background: #e53935; color: white; } .btn-red:hover { background: #c62828; }
+        .btn-yellow { background: #fbc02d; color: #333; } .btn-yellow:hover { background: #f9a825; }
         .copy-area { width: 100%; height: 120px; font-family: monospace; font-size: 0.8rem; padding: 10px; border: 1px solid #ccc; background: #f1f1f1; }
 
-        .player-list-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; background: white; margin-bottom: 5px; border-radius: 4px; border: 1px solid #eee; }
+        .player-list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: white; margin-bottom: 8px; border-radius: 4px; border: 1px solid #ddd; }
+        .player-actions { display: flex; gap: 5px; }
 
     </style>
 </head>
@@ -134,17 +136,31 @@
     <!-- PANEL ADMINA -->
     <div id="adminPanel" class="section" style="border-top: 5px solid #c62828;">
         <h2 style="color:#c62828">⚙️ Panel Administratora</h2>
-        <p style="font-size:0.9rem; color:#555;">Zmiany tutaj są tymczasowe (w przeglądarce). Aby je zapisać na stałe, użyj przycisku "POBIERZ BAZĘ" na dole i podmień kod w pliku index.html.</p>
+        <p style="font-size:0.9rem; color:#555;"><strong>WAŻNE:</strong> Po dodaniu/edycji gracza musisz kliknąć "POBIERZ NOWĄ BAZĘ" i zaktualizować kod strony, inaczej zmiany znikną po odświeżeniu!</p>
 
         <!-- Zarządzanie Graczami -->
         <div class="admin-section">
             <div class="admin-title">👥 Zarządzanie Graczami</div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr auto; gap:10px; margin-bottom:15px;">
-                <input type="text" id="newPlayerName" placeholder="Imię i Nazwisko (tylko dla Admina)">
-                <input type="text" id="newPlayerNick" placeholder="Nick (widoczny w tabeli)">
-                <button class="action-btn btn-green" onclick="admin.addPlayer()">Dodaj</button>
+            <div style="background:white; padding:15px; border-radius:5px; margin-bottom:15px; border:1px solid #ddd;">
+                <input type="hidden" id="editPlayerId" value="">
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:bold;">Imię i Nazwisko (Admin):</label>
+                        <input type="text" id="newPlayerName" placeholder="np. Jan Kowalski">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:bold;">Nick (Tabela):</label>
+                        <input type="text" id="newPlayerNick" placeholder="np. Prezes">
+                    </div>
+                </div>
+                <button id="savePlayerBtn" class="action-btn btn-green" onclick="admin.savePlayer()" style="width:100%">DODAJ GRACZA</button>
+                <button id="cancelEditBtn" class="action-btn btn-red" onclick="admin.cancelEdit()" style="width:100%; display:none; margin-top:5px;">ANULUJ EDYCJĘ</button>
             </div>
-            <div id="playerListContainer" style="max-height: 200px; overflow-y: auto;"></div>
+            
+            <div style="margin-top:10px;">
+                <strong>Lista graczy:</strong>
+                <div id="playerListContainer" style="max-height: 300px; overflow-y: auto; margin-top:5px;"></div>
+            </div>
         </div>
         
         <!-- Edycja Meczów -->
@@ -179,7 +195,7 @@
         <!-- Eksport -->
         <div style="margin-top:30px; border-top:2px dashed #ccc; padding-top:20px;">
             <h3>📤 ZAPISZ ZMIANY (Eksport na GitHub)</h3>
-            <p>Kliknij poniżej, skopiuj kod i wklej go w notatniku w miejsce sekcji "DANE STARTOWE".</p>
+            <p>Kliknij poniżej, skopiuj kod i wklej go w notatniku w miejsce sekcji "DANE STARTOWE". To jedyny sposób na zapisanie nowych graczy!</p>
             <button class="action-btn btn-red" onclick="admin.exportData()">POBIERZ NOWĄ BAZĘ DANYCH</button>
             <textarea id="exportArea" class="copy-area" placeholder="Tutaj pojawi się kod do skopiowania..."></textarea>
         </div>
@@ -192,9 +208,7 @@
    DANE STARTOWE
    ========================================================================== */
 const initialData = {
-  "players": [
-    // TU POJAWIĄ SIĘ GRACZE PO DODANIU W PANELU
-  ],
+  "players": [],
   "schedule": [
     {
       "name": "1. Runda (10-12.04)",
@@ -366,7 +380,11 @@ const app = {
     stats: {},
 
     init: function() {
-        this.data = initialData;
+        // Używamy danych z initialData. 
+        // UWAGA: initialData w kodzie jest const, ale jego zawartość (tablice/obiekty) jest mutowalna.
+        // Działamy bezpośrednio na initialData, aby funkcje admina działały poprawnie.
+        this.data = initialData; 
+
         this.calculate();
         this.renderRanking();
         this.renderRoundSelect();
@@ -560,15 +578,20 @@ const app = {
         if(currentVal) matchSel.value = currentVal;
 
         const playerSel = document.getElementById("adminPlayerSelect");
+        const currentPlayer = playerSel.value;
         playerSel.innerHTML = this.data.players.map(p => `<option value="${p.id}">${p.name} (${p.nick})</option>`).join('');
+        if(currentPlayer) playerSel.value = currentPlayer;
     },
     
     renderPlayerList: function() {
         const list = document.getElementById("playerListContainer");
         list.innerHTML = this.data.players.map((p, index) => `
             <div class="player-list-item">
-                <span><strong>${p.name}</strong> (Nick: ${p.nick})</span>
-                <button style="background:#e53935; color:white; border:none; border-radius:3px; cursor:pointer;" onclick="admin.removePlayer(${index})">Usuń</button>
+                <span><strong>${p.name}</strong> (${p.nick})</span>
+                <div class="player-actions">
+                    <button class="action-btn btn-yellow" style="padding:5px 10px; font-size:0.7rem;" onclick="admin.editPlayer('${p.id}')">EDYTUJ</button>
+                    <button class="action-btn btn-red" style="padding:5px 10px; font-size:0.7rem;" onclick="admin.removePlayer(${index})">USUŃ</button>
+                </div>
             </div>
         `).join('');
     },
@@ -596,25 +619,83 @@ const app = {
 };
 
 const admin = {
-    addPlayer: function() {
+    // Flag to check if adding or editing
+    isEditing: false,
+
+    savePlayer: function() {
         const name = document.getElementById("newPlayerName").value;
         const nick = document.getElementById("newPlayerNick").value;
+        const id = document.getElementById("editPlayerId").value;
+
         if(!name || !nick) return alert("Wypełnij oba pola!");
         
-        const newId = "p" + (new Date().getTime());
-        app.data.players.push({ id: newId, name: name, nick: nick });
+        if (this.isEditing && id) {
+            // Edit existing
+            const player = app.data.players.find(p => p.id === id);
+            if (player) {
+                player.name = name;
+                player.nick = nick;
+            }
+            this.cancelEdit();
+        } else {
+            // Add new
+            const newId = "p" + (new Date().getTime());
+            app.data.players.push({ id: newId, name: name, nick: nick });
+        }
         
+        // Clear fields
         document.getElementById("newPlayerName").value = "";
         document.getElementById("newPlayerNick").value = "";
         
-        app.init();
-        alert("Dodano gracza! Pamiętaj o eksporcie bazy.");
+        // Refresh UI manually
+        app.calculate();
+        app.renderRanking();
+        app.renderMatches(); // Re-render matches to show new player tips area
+        app.renderChart();
+        app.renderAdminSelects();
+        app.renderPlayerList();
+        
+        alert("Zapisano gracza! PAMIĘTAJ O EKSPORCIE BAZY (Przycisk na dole)!");
     },
     
+    editPlayer: function(id) {
+        const player = app.data.players.find(p => p.id === id);
+        if(!player) return;
+
+        document.getElementById("newPlayerName").value = player.name;
+        document.getElementById("newPlayerNick").value = player.nick;
+        document.getElementById("editPlayerId").value = player.id;
+        
+        document.getElementById("savePlayerBtn").innerText = "ZAPISZ ZMIANY";
+        document.getElementById("savePlayerBtn").classList.remove("btn-green");
+        document.getElementById("savePlayerBtn").classList.add("btn-blue");
+        document.getElementById("cancelEditBtn").style.display = "inline-block";
+        
+        this.isEditing = true;
+    },
+
+    cancelEdit: function() {
+        document.getElementById("newPlayerName").value = "";
+        document.getElementById("newPlayerNick").value = "";
+        document.getElementById("editPlayerId").value = "";
+        
+        document.getElementById("savePlayerBtn").innerText = "DODAJ GRACZA";
+        document.getElementById("savePlayerBtn").classList.remove("btn-blue");
+        document.getElementById("savePlayerBtn").classList.add("btn-green");
+        document.getElementById("cancelEditBtn").style.display = "none";
+        
+        this.isEditing = false;
+    },
+
     removePlayer: function(index) {
-        if(confirm("Czy na pewno usunąć tego gracza? (Jego typy też znikną przy eksporcie)")) {
+        if(confirm("Czy na pewno usunąć tego gracza? (Pamiętaj o eksporcie!)")) {
             app.data.players.splice(index, 1);
-            app.init();
+            app.calculate();
+            app.renderRanking();
+            app.renderMatches();
+            app.renderChart();
+            app.renderAdminSelects();
+            app.renderPlayerList();
         }
     },
 
