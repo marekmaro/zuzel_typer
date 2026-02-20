@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typer Żużlowy - Panel Admina</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { 
+            --primary: #1e3c72; 
+            --accent: #ffeb3b; 
+            --bg: #f4f7f6; 
+            --text: #333;
+            --success: #4caf50;
+            --danger: #f44336;
+        }
+        
+        * { box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--bg); 
+            color: var(--text); 
+            margin: 0; 
+            padding: 0; 
+        }
+        
+        /* Header */
+        header { 
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); 
+            color: white; 
+            padding: 20px; 
+            text-align: center; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+        }
+        h1 { margin: 0; font-size: 1.8rem; }
+        p.subtitle { margin: 5px 0 0; opacity: 0.8; font-size: 0.9rem; }
+
+        /* Container */
+        .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
+
+        /* Navigation */
+        .nav-tabs { 
+            display: flex; 
+            justify-content: center; 
+            gap: 10px; 
+            margin-bottom: 20px; 
+            flex-wrap: wrap; 
+        }
+        .nav-btn { 
+            padding: 10px 20px; 
+            border: none; 
+            background: white; 
+            cursor: pointer; 
+            border-radius: 20px; 
+            font-weight: 600; 
+            color: #555; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+            transition: 0.3s; 
+        }
+        .nav-btn:hover { background: #eef; }
+        .nav-btn.active { background: var(--primary); color: white; }
+        .nav-btn.admin { background: var(--danger); color: white; }
+        .nav-btn.admin:hover { background: #d32f2f; }
+
+        /* Sections */
+        .section { 
+            display: none; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+            animation: fadeIn 0.3s; 
+        }
+        .section.active { display: block; }
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(10px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+
+        /* Tables */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px 15px; text-align: center; border-bottom: 1px solid #eee; }
+        th { 
+            background-color: #f8f9fa; 
+            color: #555; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            font-size: 0.85rem; 
+        }
+        tr:last-child td { border-bottom: none; }
+        .rank-1 { background-color: #fff9c4; border-left: 4px solid #fbc02d; }
+
+        /* Badges */
+        .points { font-weight: bold; color: var(--primary); font-size: 1.1rem; }
+        .joker-badge { 
+            background-color: var(--accent); 
+            color: #333; 
+            padding: 2px 6px; 
+            border-radius: 4px; 
+            font-size: 0.75rem; 
+            font-weight: bold; 
+            border: 1px solid #fbc02d; 
+            margin-left: 5px; 
+        }
+        .pts-badge { 
+            display: inline-block; 
+            min-width: 25px; 
+            padding: 3px 8px; 
+            border-radius: 12px; 
+            font-size: 0.8rem; 
+            color: white; 
+            font-weight: bold; 
+        }
+        .pts-5 { background-color: #2e7d32; }
+        .pts-10 { background-color: #1b5e20; } /* 5 pkt z jokerem */
+        .pts-3 { background-color: #1565c0; }
+        .pts-6 { background-color: #0d47a1; } /* 3 pkt z jokerem */
+        .pts-2 { background-color: #ef6c00; }
+        .pts-4 { background-color: #e65100; } /* 2 pkt z jokerem */
+        .pts-0 { background-color: #c62828; }
+
+        /* Matches */
+        .match-card { border: 1px solid #eee; border-radius: 8px; margin-bottom: 15px; overflow: hidden; }
+        .match-head { 
+            background: #f8f9fa; 
+            padding: 10px 15px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 1px solid #eee; 
+        }
+        .match-teams { font-weight: bold; color: #333; }
+        .match-meta { font-size: 0.85rem; color: #777; }
+        .match-result-box { 
+            text-align: center; 
+            padding: 10px; 
+            background: #e3f2fd; 
+            color: #1565c0; 
+            font-weight: bold; 
+            font-size: 1.2rem; 
+            letter-spacing: 2px; 
+        }
+        .prediction-list { padding: 10px 15px; font-size: 0.9rem; }
+        .pred-row { 
+            display: flex; 
+            justify-content: space-between; 
+            padding: 4px 0; 
+            border-bottom: 1px dashed #eee; 
+        }
+        .pred-row:last-child { border-bottom: none; }
+
+        /* Alerts */
+        .alert { 
+            padding: 15px; 
+            background-color: #ffebee; 
+            color: #c62828; 
+            border: 1px solid #ef9a9a; 
+            border-radius: 8px; 
+            margin-bottom: 20px; 
+            display: none; 
+        }
+        .alert.success { background-color: #e8f5e9; color: #2e7d32; border-color: #81c784; }
+
+        /* Forms */
+        .form-group { margin-bottom: 15px; }
+        .form-group label { 
+            display: block; 
+            font-weight: 600; 
+            margin-bottom: 5px; 
+            color: #555; 
+        }
+        .form-group input, 
+        .form-group select, 
+        .form-group textarea { 
+            width: 100%; 
+            padding: 10px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px; 
+            font-size: 1rem; 
+        }
+        .form-group input[type="checkbox"] { width: auto; margin-right: 5px; }
+        
+        .btn { 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            transition: 0.3s; 
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: #152a52; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { background: #388e3c; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-danger:hover { background: #d32f2f; }
+        .btn-secondary { background: #757575; color: white; }
+        .btn-secondary:hover { background: #616161; }
+
+        .admin-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+            gap: 20px; 
+            margin-top: 20px; 
+        }
+        .admin-card { 
+            background: #f8f9fa; 
+            padding: 15px; 
+            border-radius: 8px; 
+            border: 1px solid #ddd; 
+        }
+        .admin-card h3 { margin-top: 0; color: var(--primary); }
+
+        .player-item, .round-item { 
+            background: white; 
+            padding: 10px; 
+            border-radius: 5px; 
+            margin-bottom: 10px; 
+            border: 1px solid #eee; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        
+        .delete-btn { 
+            background: var(--danger); 
+            color: white; 
+            border: none; 
+            padding: 5px 10px; 
+            border-radius: 3px; 
+            cursor: pointer; 
+            font-size: 0.8rem; 
+        }
+        .delete-btn:hover { background: #d32f2f; }
+
+        footer { text-align: center; margin-top: 40px; color: #888; font-size: 0.8rem; padding-bottom: 20px; }
+
+        /* Login overlay */
+        .login-overlay { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.8); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 9999; 
+        }
+        .login-box { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 10px; 
+            max-width: 400px; 
+            width: 90%; 
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🏁 Typer Ekstraliga 2026/27</h1>
+    <p class="subtitle">Oficjalna tabela - Panel z edycją dla Admina</p>
+</header>
+
+<div class="container">
+    
+    <!-- ERROR/SUCCESS BOX -->
+    <div id="alertBox" class="alert"></div>
+
+    <!-- NAVIGATION -->
+    <div class="nav-tabs">
+        <button class="nav-btn active" onclick="app.showTab('ranking')">🏆 Tabela</button>
+        <button class="nav-btn" onclick="app.showTab('rounds')">📅 Wyniki Rund</button>
+        <button class="nav-btn" onclick="app.showTab('stats')">📈 Wykres Formy</button>
+        <button class="nav-btn" onclick="app.showTab('rules')">📜 Regulamin</button>
+        <button class="nav-btn admin" onclick="app.showAdminPanel()">⚙️ ADMIN</button>
+    </div>
+
+    <!-- SEKCJA 1: TABELA -->
+    <div id="ranking" class="section active">
+        <h2>Klasyfikacja Generalna</h2>
+        <table id="rankingTable">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th style="text-align:left">Typer</th>
+                    <th title="Trafione idealnie (5pkt)">5 pkt</th>
+                    <th title="Trafiona różnica (3pkt)">3 pkt</th>
+                    <th title="Trafiony zwycięzca (2pkt)">2 pkt</th>
+                    <th>Suma</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <!-- SEKCJA 2: RUNDY -->
+    <div id="rounds" class="section">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h2>Podgląd Kolejki</h2>
+            <select id="roundSelect" onchange="app.renderRound()" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+            </select>
+        </div>
+        <div id="roundContent"></div>
+    </div>
+
+    <!-- SEKCJA 3: WYKRESY -->
+    <div id="stats" class="section">
+        <h2>Wyścig o zwycięstwo</h2>
+        <p style="font-size:0.9rem; color:#666; margin-bottom:15px;">Wykres pokazuje sumę punktów zdobytych po każdej kolejce.</p>
+        <canvas id="formChart" height="200"></canvas>
+    </div>
+
+    <!-- SEKCJA 4: REGULAMIN -->
+    <div id="rules" class="section">
+        <h2>Regulamin Typera</h2>
+        <ul style="line-height: 1.6; color: #444;">
+            <li><strong>Zgłaszanie typów:</strong> Typy należy zgłosić najpóźniej 24h przed pierwszym biegiem kolejki.</li>
+            <li><strong>Punktacja:</strong>
+                <ul>
+                    <li><span class="pts-badge pts-5">5 pkt</span> – Dokładny wynik meczu.</li>
+                    <li><span class="pts-badge pts-3">3 pkt</span> – Prawidłowy zwycięzca i dokładna różnica punktów.</li>
+                    <li><span class="pts-badge pts-2">2 pkt</span> – Prawidłowy zwycięzca (ale inny wynik).</li>
+                    <li><span class="pts-badge pts-0">0 pkt</span> – Błędne wytypowanie.</li>
+                    <li><strong>JOKER (x2):</strong> Raz na rundę przy jednym meczu punkty się podwajają.</li>
+                </ul>
+            </li>
+            <li><strong>Walkower:</strong> Rozliczany jako 40:0.</li>
+            <li><strong>Mecze przełożone:</strong> Typy przechodzą na nowy termin.</li>
+        </ul>
+    </div>
+
+    <!-- SEKCJA 5: PANEL ADMINA -->
+    <div id="admin" class="section">
+        <h2>⚙️ Panel Administratora</h2>
+        
+        <div class="admin-grid">
+            <!-- Zarządzanie graczami -->
+            <div class="admin-card">
+                <h3>👥 Gracze</h3>
+                <div class="form-group">
+                    <input type="text" id="newPlayerName" placeholder="Imię i nazwisko">
+                </div>
+                <div class="form-group">
+                    <input type="text" id="newPlayerNick" placeholder="Pseudonim (nick)">
+                </div>
+                <button class="btn btn-success" onclick="app.addPlayer()">Dodaj gracza</button>
+                <div id="playersList" style="margin-top:15px;"></div>
+            </div>
+
+            <!-- Zarządzanie rundami -->
+            <div class="admin-card">
+                <h3>📅 Rundy</h3>
+                <div class="form-group">
+                    <input type="text" id="newRoundName" placeholder="Nazwa rundy (np. Runda 1)">
+                </div>
+                <button class="btn btn-success" onclick="app.addRound()">Dodaj rundę</button>
+                <div id="roundsList" style="margin-top:15px;"></div>
+            </div>
+        </div>
+
+        <!-- Zarządzanie meczami -->
+        <div class="admin-card" style="margin-top:20px;">
+            <h3>⚽ Dodaj mecz do rundy</h3>
+            <div class="form-group">
+                <label>Wybierz rundę:</label>
+                <select id="matchRoundSelect"></select>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <div class="form-group">
+                    <label>Gospodarz:</label>
+                    <input type="text" id="matchHost" placeholder="np. Motor Lublin">
+                </div>
+                <div class="form-group">
+                    <label>Gość:</label>
+                    <input type="text" id="matchGuest" placeholder="np. Sparta Wrocław">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Data i godzina:</label>
+                <input type="text" id="matchDate" placeholder="np. 12.04 16:30">
+            </div>
+            <button class="btn btn-success" onclick="app.addMatch()">Dodaj mecz</button>
+        </div>
+
+        <!-- Wpisywanie typów -->
+        <div class="admin-card" style="margin-top:20px;">
+            <h3>✍️ Wpisz typy graczy</h3>
+            <div class="form-group">
+                <label>Runda:</label>
+                <select id="typeRoundSelect" onchange="app.refreshTypeMatchSelect()"></select>
+            </div>
+            <div class="form-group">
+                <label>Mecz:</label>
+                <select id="typeMatchSelect"></select>
+            </div>
+            <div class="form-group">
+                <label>Gracz:</label>
+                <select id="typePlayerSelect"></select>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr auto; gap:10px; align-items:end;">
+                <div class="form-group">
+                    <label>Typ (np. 50:40):</label>
+                    <input type="text" id="typeScore" placeholder="50:40">
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="typeJoker"> JOKER (x2)
+                    </label>
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="app.saveType()">Zapisz typ</button>
+        </div>
+
+        <!-- Wpisywanie wyniku -->
+        <div class="admin-card" style="margin-top:20px;">
+            <h3>🏁 Wpisz wynik meczu</h3>
+            <div class="form-group">
+                <label>Runda:</label>
+                <select id="resultRoundSelect" onchange="app.refreshResultMatchSelect()"></select>
+            </div>
+            <div class="form-group">
+                <label>Mecz:</label>
+                <select id="resultMatchSelect"></select>
+            </div>
+            <div class="form-group">
+                <label>Wynik oficjalny (np. 52:38):</label>
+                <input type="text" id="resultScore" placeholder="52:38">
+            </div>
+            <button class="btn btn-primary" onclick="app.saveResult()">Zapisz wynik</button>
+        </div>
+
+        <!-- Eksport/Import -->
+        <div class="admin-card" style="margin-top:20px;">
+            <h3>💾 Backup danych</h3>
+            <button class="btn btn-secondary" onclick="app.exportData()">📥 Pobierz dane (JSON)</button>
+            <div class="form-group" style="margin-top:10px;">
+                <label>Wgraj dane z pliku:</label>
+                <input type="file" id="importFile" accept=".json">
+                <button class="btn btn-secondary" onclick="app.importData()" style="margin-top:5px;">📤 Importuj</button>
+            </div>
+        </div>
+
+        <!-- Wyloguj -->
+        <button class="btn btn-danger" onclick="app.logout()" style="margin-top:20px; width:100%;">🚪 Wyloguj z panelu</button>
+    </div>
+
+</div>
+
+<footer>
+    Ostatnia aktualizacja: <span id="lastUpdate"></span>
+</footer>
+
+<script>
+    const app = {
+        // Domyślne hasło admina (zmień je!)
+        adminPassword: "admin123",
+        
+        // Klucze localStorage
+        STORAGE_KEY: 'zuzelTyperData',
+        AUTH_KEY: 'zuzelTyperAuth',
+
+        // Dane gry
+        players: [],
+        data: [],
+
+        init: function() {
+            this.loadData();
+            this.checkAuth();
+            this.refresh();
+        },
+
+        checkAuth: function() {
+            const auth = localStorage.getItem(this.AUTH_KEY);
+            if(!auth || auth !== 'true') {
+                // Nie pokazuj przycisku admin
+                document.querySelector('.nav-btn.admin').style.display = 'none';
+            }
+        },
+
+        showAdminPanel: function() {
+            const auth = localStorage.getItem(this.AUTH_KEY);
+            if(!auth || auth !== 'true') {
+                this.showLoginDialog();
+            } else {
+                this.showTab('admin');
+                this.refreshAdminPanel();
+            }
+        },
+
+        showLoginDialog: function() {
+            const pass = prompt("Wpisz hasło administratora:");
+            if(pass === this.adminPassword) {
+                localStorage.setItem(this.AUTH_KEY, 'true');
+                document.querySelector('.nav-btn.admin').style.display = 'inline-block';
+                this.showAlert("Zalogowano jako Admin", "success");
+                this.showTab('admin');
+                this.refreshAdminPanel();
+            } else {
+                this.showAlert("Błędne hasło!");
+            }
+        },
+
+        logout: function() {
+            localStorage.removeItem(this.AUTH_KEY);
+            document.querySelector('.nav-btn.admin').style.display = 'none';
+            this.showAlert("Wylogowano z panelu admina", "success");
+            this.showTab('ranking');
+        },
+
+        loadData: function() {
+            const stored = localStorage.getItem(this.STORAGE_KEY);
+            if(stored) {
+                const parsed = JSON.parse(stored);
+                this.players = parsed.players || [];
+                this.data = parsed.data || [];
+            } else {
+                // Dane startowe
+                this.players = [
+                    { id: "p1", nick: "Prezes", name: "Marek Kowalski" },
+                    { id: "p2", nick: "Ruda", name: "Anna Nowak" }
+                ];
+                this.data = [
+                    {
+                        name: "Runda 1",
+                        matches: []
+                    }
+                ];
+                this.saveData();
+            }
+        },
+
+        saveData: function() {
+            localStorage.setItem(this.STORAGE_KEY, JSON.stringify({
+                players: this.players,
+                data: this.data
+            }));
+            document.getElementById('lastUpdate').innerText = new Date().toLocaleString('pl-PL');
+        },
+
+        refresh: function() {
+            this.validateJokers();
+            this.calculateRanking();
+            this.renderRankingTable();
+            this.renderRoundSelect();
+            this.renderRound();
+            this.renderChart();
+        },
+
+        showAlert: function(msg, type = 'error') {
+            const box = document.getElementById('alertBox');
+            box.className = 'alert ' + (type === 'success' ? 'success' : '');
+            box.innerHTML = msg;
+            box.style.display = 'block';
+            setTimeout(() => box.style.display = 'none', 4000);
+        },
+
+        // ADMIN - Gracze
+        addPlayer: function() {
+            const name = document.getElementById('newPlayerName').value.trim();
+            const nick = document.getElementById('newPlayerNick').value.trim();
+            if(!name || !nick) {
+                this.showAlert("Wypełnij oba pola!");
+                return;
+            }
+            const id = 'p' + Date.now();
+            this.players.push({ id, name, nick });
+            this.saveData();
+            this.showAlert("Dodano gracza: " + nick, "success");
+            document.getElementById('newPlayerName').value = '';
+            document.getElementById('newPlayerNick').value = '';
+            this.refreshAdminPanel();
+        },
+
+        deletePlayer: function(id) {
+            if(!confirm("Czy na pewno usunąć tego gracza? (Wszystkie jego typy zostaną usunięte)")) return;
+            this.players = this.players.filter(p => p.id !== id);
+            // Usuń typy tego gracza
+            this.data.forEach(round => {
+                round.matches.forEach(match => {
+                    delete match.types[id];
+                });
+            });
+            this.saveData();
+            this.showAlert("Usunięto gracza", "success");
+            this.refreshAdminPanel();
+            this.refresh();
+        },
+
+        // ADMIN - Rundy
+        addRound: function() {
+            const name = document.getElementById('newRoundName').value.trim();
+            if(!name) {
+                this.showAlert("Wpisz nazwę rundy!");
+                return;
+            }
+            this.data.push({ name, matches: [] });
+            this.saveData();
+            this.showAlert("Dodano rundę: " + name, "success");
+            document.getElementById('newRoundName').value = '';
+            this.refreshAdminPanel();
+            this.refresh();
+        },
+
+        deleteRound: function(idx) {
+            if(!confirm("Czy na pewno usunąć tę rundę wraz z meczami?")) return;
+            this.data.splice(idx, 1);
+            this.saveData();
+            this.showAlert("Usunięto rundę", "success");
+            this.refreshAdminPanel();
+            this.refresh();
+        },
+
+        // ADMIN - Mecze
+        addMatch: function() {
+            const roundIdx = document.getElementById('matchRoundSelect').value;
+            const host = document.getElementById('matchHost').value.trim();
+            const guest = document.getElementById('matchGuest').value.trim();
+            const date = document.getElementById('matchDate').value.trim();
+
+            if(!host || !guest || !date) {
+                this.showAlert("Wypełnij wszystkie pola meczu!");
+                return;
+            }
+
+            this.data[roundIdx].matches.push({
+                host, guest, date, result: null, types: {}
+            });
+            this.saveData();
+            this.showAlert("Dodano mecz", "success");
+            document.getElementById('matchHost').value = '';
+            document.getElementById('matchGuest').value = '';
+            document.getElementById('matchDate').value = '';
+            this.refresh();
+        },
+
+        // ADMIN - Typy
+        saveType: function() {
+            const roundIdx = document.getElementById('typeRoundSelect').value;
+            const matchIdx = document.getElementById('typeMatchSelect').value;
+            const playerId = document.getElementById('typePlayerSelect').value;
+            const score = document.getElementById('typeScore').value.trim();
+            const joker = document.getElementById('typeJoker').checked;
+
+            if(!score || !score.includes(':')) {
+                this.showAlert("Wpisz poprawny wynik (np. 50:40)");
+                return;
+            }
+
+            if(!this.data[roundIdx].matches[matchIdx].types) {
+                this.data[roundIdx].matches[matchIdx].types = {};
+            }
+
+            this.data[roundIdx].matches[matchIdx].types[playerId] = { score, joker };
+            this.saveData();
+            this.showAlert("Zapisano typ", "success");
+            document.getElementById('typeScore').value = '';
+            document.getElementById('typeJoker').checked = false;
+            this.refresh();
+        },
+
+        // ADMIN - Wyniki
+        saveResult: function() {
+            const roundIdx = document.getElementById('resultRoundSelect').value;
+            const matchIdx = document.getElementById('resultMatchSelect').value;
+            const score = document.getElementById('resultScore').value.trim();
+
+            if(!score || !score.includes(':')) {
+                this.showAlert("Wpisz poprawny wynik (np. 52:38)");
+                return;
+            }
+
+            this.data[roundIdx].matches[matchIdx].result = score;
+            this.saveData();
+            this.showAlert("Zapisano wynik meczu", "success");
+            document.getElementById('resultScore').value = '';
+            this.refresh();
+        },
+
+        refreshAdminPanel: function() {
+            // Lista graczy
+            const playersList = document.getElementById('playersList');
+            playersList.innerHTML = this.players.map(p => `
+                <div class="player-item">
+                    <span><strong>${p.nick}</strong> (${p.name})</span>
+                    <button class="delete-btn" onclick="app.deletePlayer('${p.id}')">Usuń</button>
+                </div>
+            `).join('');
+
+            // Lista rund
+            const roundsList = document.getElementById('roundsList');
+            roundsList.innerHTML = this.data.map((r, i) => `
+                <div class="round-item">
+                    <span><strong>${r.name}</strong> (${r.matches.length} meczów)</span>
+                    <button class="delete-btn" onclick="app.deleteRound(${i})">Usuń</button>
+                </div>
+            `).join('');
+
+            // Select rundy dla dodawania meczów
+            const matchRoundSelect = document.getElementById('matchRoundSelect');
+            matchRoundSelect.innerHTML = this.data.map((r, i) => 
+                `<option value="${i}">${r.name}</option>`
+            ).join('');
+
+            // Select dla typów
+            const typeRoundSelect = document.getElementById('typeRoundSelect');
+            typeRoundSelect.innerHTML = this.data.map((r, i) => 
+                `<option value="${i}">${r.name}</option>`
+            ).join('');
+
+            const typePlayerSelect = document.getElementById('typePlayerSelect');
+            typePlayerSelect.innerHTML = this.players.map(p => 
+                `<option value="${p.id}">${p.nick}</option>`
+            ).join('');
+
+            // Select dla wyników
+            const resultRoundSelect = document.getElementById('resultRoundSelect');
+            resultRoundSelect.innerHTML = this.data.map((r, i) => 
+                `<option value="${i}">${r.name}</option>`
+            ).join('');
+
+            this.refreshTypeMatchSelect();
+            this.refreshResultMatchSelect();
+        },
+
+        refreshTypeMatchSelect: function() {
+            const roundIdx = document.getElementById('typeRoundSelect').value;
+            const select = document.getElementById('typeMatchSelect');
+            select.innerHTML = this.data[roundIdx].matches.map((m, i) => 
+                `<option value="${i}">${m.host} - ${m.guest}</option>`
+            ).join('');
+        },
+
+        refreshResultMatchSelect: function() {
+            const roundIdx = document.getElementById('resultRoundSelect').value;
+            const select = document.getElementById('resultMatchSelect');
+            select.innerHTML = this.data[roundIdx].matches.map((m, i) => 
+                `<option value="${i}">${m.host} - ${m.guest}</option>`
+            ).join('');
+        },
+
+        // Eksport/Import
+        exportData: function() {
+            const dataStr = JSON.stringify({ players: this.players, data: this.data }, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'zuzel-typer-backup.json';
+            a.click();
+            this.showAlert("Pobrano backup danych", "success");
+        },
+
+        importData: function() {
+            const file = document.getElementById('importFile').files[0];
+            if(!file) {
+                this.showAlert("Wybierz plik JSON!");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    this.players = imported.players || [];
+                    this.data = imported.data || [];
+                    this.saveData();
+                    this.showAlert("Zaimportowano dane!", "success");
+                    this.refresh();
+                    this.refreshAdminPanel();
+                } catch(err) {
+                    this.showAlert("Błąd pliku JSON: " + err.message);
+                }
+            };
+            reader.readAsText(file);
+        },
+
+        // === RESZTA LOGIKI (bez zmian) ===
+
+        validateJokers: function() {
+            let errors = [];
+            this.data.forEach(round => {
+                let jokerCounts = {};
+                this.players.forEach(p => jokerCounts[p.id] = 0);
+
+                round.matches.forEach(match => {
+                    for (const [playerId, type] of Object.entries(match.types || {})) {
+                        if (type.joker) jokerCounts[playerId]++;
+                    }
+                });
+
+                for (const [playerId, count] of Object.entries(jokerCounts)) {
+                    if (count > 1) {
+                        const pName = this.players.find(p => p.id === playerId)?.nick || playerId;
+                        errors.push(`⚠️ <strong>${pName}</strong> użył ${count} Jokerów w ${round.name}! (Dozwolony 1)`);
+                    }
+                }
+            });
+
+            if (errors.length > 0) {
+                this.showAlert(errors.join("<br>"));
+            }
+        },
+
+        parseScore: function(str) {
+            if (!str) return null;
+            const p = str.split(':');
+            return { h: parseInt(p[0]), g: parseInt(p[1]) };
+        },
+
+        calculatePoints: function(realStr, typeStr, isJoker) {
+            if (!realStr || !typeStr) return 0;
+            const r = this.parseScore(realStr);
+            const t = this.parseScore(typeStr);
+            
+            let pts = 0;
+            const rDiff = r.h - r.g;
+            const tDiff = t.h - t.g;
+            const rWin = rDiff > 0 ? 1 : (rDiff < 0 ? 2 : 0);
+            const tWin = tDiff > 0 ? 1 : (tDiff < 0 ? 2 : 0);
+
+            if (r.h === t.h && r.g === t.g) pts = 5;
+            else if (rWin === tWin && rDiff === tDiff) pts = 3;
+            else if (rWin === tWin) pts = 2;
+            else pts = 0;
+
+            return isJoker ? pts * 2 : pts;
+        },
+
+        stats: {},
+
+        calculateRanking: function() {
+            this.players.forEach(p => {
+                this.stats[p.id] = { 
+                    nick: p.nick, 
+                    total: 0, 
+                    p5: 0, p3: 0, p2: 0, 
+                    history: [] 
+                };
+            });
+
+            this.data.forEach(round => {
+                let roundScores = {};
+                this.players.forEach(p => roundScores[p.id] = 0);
+
+                round.matches.forEach(m => {
+                    if(m.result) {
+                        for (const [pid, type] of Object.entries(m.types || {})) {
+                            if(this.stats[pid]) {
+                                const pts = this.calculatePoints(m.result, type.score, type.joker);
+                                const basePts = type.joker ? pts / 2 : pts;
+
+                                this.stats[pid].total += pts;
+                                roundScores[pid] += pts;
+
+                                if (basePts === 5) this.stats[pid].p5++;
+                                else if (basePts === 3) this.stats[pid].p3++;
+                                else if (basePts === 2) this.stats[pid].p2++;
+                            }
+                        }
+                    }
+                });
+
+                this.players.forEach(p => {
+                    const prev = this.stats[p.id].history.length > 0 ? 
+                        this.stats[p.id].history[this.stats[p.id].history.length-1] : 0;
+                    this.stats[p.id].history.push(prev + roundScores[p.id]);
+                });
+            });
+        },
+
+        renderRankingTable: function() {
+            const tbody = document.querySelector("#rankingTable tbody");
+            const sorted = Object.values(this.stats).sort((a,b) => b.total - a.total);
+            
+            tbody.innerHTML = sorted.map((s, i) => `
+                <tr class="${i===0 ? 'rank-1' : ''}">
+                    <td>${i+1}.</td>
+                    <td style="text-align:left; font-weight:600;">${s.nick} ${i===0 ? '👑' : ''}</td>
+                    <td>${s.p5}</td>
+                    <td>${s.p3}</td>
+                    <td>${s.p2}</td>
+                    <td><span class="points">${s.total}</span></td>
+                </tr>
+            `).join('');
+        },
+
+        renderRoundSelect: function() {
+            const sel = document.getElementById("roundSelect");
+            sel.innerHTML = this.data.map((r, i) => `<option value="${i}">${r.name}</option>`).join('');
+            sel.value = 0;
+        },
+
+        renderRound: function() {
+            const idx = document.getElementById("roundSelect").value;
+            const round = this.data[idx];
+            const container = document.getElementById("roundContent");
+
+            container.innerHTML = round.matches.map(m => {
+                const resClass = m.result ? '' : 'style="color:#ccc"';
+                const resText = m.result ? m.result : '-:-';
+                
+                const typesHtml = this.players.map(p => {
+                    const t = m.types?.[p.id];
+                    if(!t) return `<div class="pred-row"><span style="color:#999">${p.nick}</span> <span>brak typu</span></div>`;
+                    
+                    const pts = m.result ? this.calculatePoints(m.result, t.score, t.joker) : null;
+                    const ptsBadge = pts !== null ? `<span class="pts-badge pts-${pts}">${pts} pkt</span>` : '';
+                    const jokerHtml = t.joker ? `<span class="joker-badge">JOKER (x2)</span>` : '';
+
+                    return `
+                        <div class="pred-row">
+                            <span>${p.nick} ${jokerHtml}</span>
+                            <div>
+                                <strong>${t.score}</strong> ${ptsBadge}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                return `
+                <div class="match-card">
+                    <div class="match-head">
+                        <div>
+                            <div class="match-meta">${m.date}</div>
+                            <div class="match-teams">${m.host} - ${m.guest}</div>
+                        </div>
+                        <div class="match-result-box" ${resClass}>${resText}</div>
+                    </div>
+                    <div class="prediction-list">
+                        ${typesHtml}
+                    </div>
+                </div>`;
+            }).join('');
+        },
+
+        renderChart: function() {
+            const canvas = document.getElementById('formChart');
+            if(window.myChart) window.myChart.destroy();
+            
+            const ctx = canvas.getContext('2d');
+            const labels = this.data.map(r => r.name);
+            const datasets = this.players.map((p, i) => {
+                const colors = ['#1e3c72', '#e91e63', '#4caf50', '#ff9800', '#9c27b0'];
+                return {
+                    label: p.nick,
+                    data: this.stats[p.id]?.history || [],
+                    borderColor: colors[i % colors.length],
+                    backgroundColor: colors[i % colors.length],
+                    tension: 0.1,
+                    fill: false
+                };
+            });
+
+            window.myChart = new Chart(ctx, {
+                type: 'line',
+                data: { labels, datasets },
+                options: { 
+                    responsive: true, 
+                    interaction: { mode: 'index', intersect: false } 
+                }
+            });
+        },
+
+        showTab: function(id) {
+            document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+    };
+
+    // Start
+    app.init();
+</script>
+
+</body>
+</html>
